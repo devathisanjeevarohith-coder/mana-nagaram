@@ -60,7 +60,7 @@
     minLat: Math.min(...locations.map(x => x.lat)), maxLat: Math.max(...locations.map(x => x.lat)),
     minLon: Math.min(...locations.map(x => x.lon)), maxLon: Math.max(...locations.map(x => x.lon)),
   };
-  const state = {zone: 'all', issue: 'all', search: '', selected: null, expanded: false, sort: 'priority'};
+  const state = {zone: 'all', issue: 'all', search: '', selected: null, expanded: false, sort: 'priority', mobileDetailOpen: false};
   const zones = [...new Set(locations.map(x => x.zone))].sort((a, b) => a.localeCompare(b));
   zones.forEach((zone) => zoneFilter.add(new Option(zone.replace('_', ' '), zone)));
   data.incidentTypes.forEach((type) => issueFilter.add(new Option(type, type)));
@@ -95,9 +95,8 @@
     $('metricOpen').textContent = fmt.format(openTotal);
     $('metricIncidentShare').textContent = `${pct(incidentTotal, data.summary.incidents)}%`;
     $('metricComplaintShare').textContent = `${pct(complaintTotal, data.summary.complaints)}%`;
-    const savedInView = rows.filter(loc => reviewDecisions[loc.id]).length;
-    $('metricReviews').textContent = fmt.format(savedInView);
-    $('metricReviewScope').textContent = `of ${fmt.format(rows.length)} in this view`;
+    const savedInView = rows.filter(loc => reviewDecisions[loc.id]?.action).length;
+    $('queueReviewCount').textContent = `${fmt.format(savedInView)} reviewed`;
     $('navCount').textContent = fmt.format(rows.length);
     $('queueCount').textContent = fmt.format(rows.length);
     $('mapScope').textContent = state.zone === 'all' ? 'ALL ZONES' : state.zone.replace('_', ' ');
@@ -132,11 +131,17 @@
       point.setAttribute('fill', loc.priority >= 66 ? '#d77c69' : loc.priority >= 40 ? '#e2ad54' : '#76b49b');
       point.setAttribute('opacity', selected ? '1' : '0.78');
       point.setAttribute('class', `map-point${selected ? ' selected' : ''}`);
+      point.setAttribute('role', 'button');
+      point.setAttribute('tabindex', '0');
+      point.setAttribute('aria-label', `Select ${loc.id}, ${loc.zone.replace('_', ' ')}, review index ${loc.priority} out of 100`);
       point.dataset.id = loc.id;
       const title = document.createElementNS(svgNS, 'title');
       title.textContent = `${loc.id} · ${loc.zone.replace('_', ' ')} · ${loc.priority}/100`;
       point.append(title);
       point.addEventListener('click', () => selectLocation(loc.id));
+      point.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); selectLocation(loc.id); }
+      });
       point.addEventListener('pointerenter', (event) => showTooltip(event, loc));
       point.addEventListener('pointermove', (event) => moveTooltip(event));
       point.addEventListener('pointerleave', () => { mapTooltip.style.display = 'none'; });
@@ -145,7 +150,12 @@
   }
 
   function showTooltip(event, loc) {
-    mapTooltip.innerHTML = `<strong>${loc.id} · ${loc.zone.replace('_', ' ')}</strong><span>${loc.priority}/100 review index · ${fmt.format(loc.incidentCount)} incidents</span>`;
+    mapTooltip.replaceChildren();
+    const title = document.createElement('strong');
+    title.textContent = `${loc.id} · ${loc.zone.replace('_', ' ')}`;
+    const description = document.createElement('span');
+    description.textContent = `${loc.priority}/100 review index · ${fmt.format(loc.incidentCount)} incidents`;
+    mapTooltip.append(title, description);
     mapTooltip.style.display = 'block';
     moveTooltip(event);
   }
@@ -278,7 +288,7 @@
         const inc = state.issue === 'all' ? loc.incidentCount : (loc.incidentTypes[state.issue] || 0);
         const saved = reviewDecisions[loc.id];
         const reviewLabel = saved ? 'Decision saved' : 'Needs review';
-        return `<button class="location-row${loc.id === state.selected ? ' selected' : ''}" data-id="${loc.id}" aria-label="View ${loc.id}, priority ${loc.priority}, ${reviewLabel}"><span class="row-location"><span class="row-rank">${String(i + 1).padStart(2, '0')}</span><span class="row-name"><strong>${loc.id} <span class="row-zone">· ${loc.zone.replace('_', ' ')}</span></strong><small>${loc.condition} road · ${displayIssue} · <span class="row-review${saved ? ' saved' : ''}">${reviewLabel}</span></small></span></span><span class="row-number">${fmt.format(inc)}</span><span class="row-number muted">${fmt.format(loc.complaintCount)}</span><span class="row-number muted">${fmt.format(loc.openWork)}</span><span class="priority-cell"><span class="priority-meter"><i class="${cls}" style="width:${loc.priority}%"></i></span><strong class="priority-score">${loc.priority}</strong></span></button>`;
+        return `<button class="location-row${loc.id === state.selected ? ' selected' : ''}" data-id="${loc.id}" aria-label="View ${loc.id}, priority ${loc.priority}, ${reviewLabel}"><span class="row-location"><span class="row-rank">${String(i + 1).padStart(2, '0')}</span><span class="row-name"><strong>${loc.id} <span class="row-zone">· ${loc.zone.replace('_', ' ')}</span></strong><small>${loc.condition} road · ${displayIssue} · ${fmt.format(inc)} reports · ${fmt.format(loc.complaintCount)} complaints · ${fmt.format(loc.openWork)} open · <span class="row-review${saved ? ' saved' : ''}">${reviewLabel}</span></small></span></span><span class="row-number">${fmt.format(inc)}</span><span class="row-number muted">${fmt.format(loc.complaintCount)}</span><span class="row-number muted">${fmt.format(loc.openWork)}</span><span class="priority-cell"><span class="priority-meter"><i class="${cls}" style="width:${loc.priority}%"></i></span><strong class="priority-score">${loc.priority}</strong></span></button>`;
       }).join('');
       queueRows.querySelectorAll('.location-row').forEach((button) => button.addEventListener('click', () => selectLocation(button.dataset.id)));
     }
@@ -336,11 +346,15 @@
     renderTrend(rows);
     renderQueue(rows);
     renderDetails(selected);
+    $('detailCard').classList.toggle('is-open', state.mobileDetailOpen);
+    $('detailScrim').classList.toggle('is-open', state.mobileDetailOpen);
   }
 
   function selectLocation(id) {
     state.selected = id;
+    state.mobileDetailOpen = true;
     render();
+    if (window.matchMedia('(max-width: 680px)').matches) $('detailClose').focus({preventScroll: true});
   }
 
   function exportQueue() {
@@ -411,6 +425,9 @@
   $('exportTop').addEventListener('click', exportQueue);
   $('exportActions').addEventListener('click', exportReviewLog);
   $('saveDecision').addEventListener('click', saveDecision);
+  const closeLocationDetails = () => { state.mobileDetailOpen = false; render(); };
+  $('detailClose').addEventListener('click', closeLocationDetails);
+  $('detailScrim').addEventListener('click', closeLocationDetails);
   $('assistantForm').addEventListener('submit', (event) => {
     event.preventDefault();
     answerQuestion($('assistantInput').value);
@@ -427,3 +444,4 @@
   }));
   render();
 })();
+
