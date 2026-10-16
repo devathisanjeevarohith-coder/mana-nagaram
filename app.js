@@ -529,7 +529,6 @@
     $('reportType').value = data.incidentTypes[0] || '';
     releasePhotoPreviews();
     $('photoPreview').replaceChildren();
-    $('fieldReportDetails').open = false;
   }
 
   async function saveFieldReport(event) {

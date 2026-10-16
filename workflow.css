@@ -136,3 +136,30 @@ body{font-size:16px}.brand strong{font-size:17px}.brand small{font-size:12px}.si
 @media(max-width:600px){h1{font-size:28px}.side-nav a{font-size:0}.topbar{font-size:12px}.page-body{font-size:13px}.location-row .row-name small{font-size:10px}.briefing-body p#briefingText{font-size:13px}}
 
 @media(max-width:900px){.staff-command-shortcuts:has(button)~p{grid-row:4}}
+
+/* Split review work into clear, always-visible sections */
+.decision-evidence-grid{grid-template-columns:minmax(0,.92fr) minmax(0,1.08fr);align-items:stretch;gap:16px;margin:14px 0 17px}
+.decision-evidence-grid>.detail-disclosure{display:flex;flex-direction:column;min-width:0;padding:0 17px 15px;border:1px solid #e7ddd4;border-radius:15px;background:#fffdfa;box-shadow:0 5px 18px rgba(45,38,31,.045)}
+.decision-section-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:58px;padding:11px 0;border-bottom:1px solid #eee5dd;color:#493f3a;font-size:14px;font-weight:750}
+.decision-evidence-grid>.decision-disclosure>.decision-panel{padding:14px 0 4px}
+.decision-panel .decision-heading{margin-bottom:10px;padding:11px 12px;border:1px solid #eee4da;border-radius:10px;background:#faf5ef}
+.decision-panel #decisionHeading{font-size:15px}.decision-panel .decision-label{margin-top:10px;font-size:12px}
+.decision-panel select,.decision-panel textarea{border-color:#e4dbd2;border-radius:9px;background:#fff;font-size:14px}
+.decision-panel textarea{min-height:96px}.decision-save{width:100%;min-height:44px;margin-top:6px;font-size:13px}
+.decision-foot{margin:9px 0 0;font-size:11px;line-height:1.45}
+.decision-evidence-grid .field-report-list{padding:12px 0}
+.field-report-empty{padding:11px 12px;border-radius:9px;background:#f7f3ee;color:#707b88;font-size:12px}
+.field-report-details{margin-top:auto;padding:12px 0 0;border-top:1px solid #eee5dd}
+.field-report-details-heading{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:11px}
+.field-report-details-heading strong{color:#493f3a;font-size:13px}.field-report-details-heading span{color:#8c9297;font-size:11px}
+.field-report-form{display:grid;gap:9px;padding:13px;border:1px solid #eee5dd;border-radius:11px;background:#fcfaf7}
+.field-report-form .decision-label{margin:2px 0 0;font-size:11px}
+.field-report-form select,.field-report-form input:not([type=file]),.field-report-form textarea{min-height:39px;border:1px solid #e4dbd2;border-radius:8px;background:#fff;font-size:13px}
+.field-report-form textarea{min-height:78px;padding:9px;resize:vertical}.field-report-form .report-two-col{gap:9px}
+.field-report-form .decision-foot{padding:9px 10px;border-radius:8px;background:#f6f0e8}
+.field-report-form .location-button{justify-self:start;padding:7px 10px;border:1px solid #e2d8ce;border-radius:8px;background:#fff;color:#536779;font-size:11px}
+.field-report-form .photo-preview{display:flex;flex-wrap:wrap;gap:8px}.field-report-form .photo-preview img{width:68px;height:60px;border-radius:7px;object-fit:cover}
+@media(max-width:920px){.decision-evidence-grid{grid-template-columns:minmax(0,1fr);align-items:stretch}.field-report-details{margin-top:0}}
+
+.auth-card{color:var(--ink)}.auth-card h2{font-size:20px}.topbar-right #accountLink{white-space:nowrap}
+@media(max-width:600px){.topbar-right #accountLink{display:none}.citizen-header #accountLink{min-height:34px;font-size:11px;padding:0 9px}}

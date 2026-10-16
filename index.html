@@ -13,7 +13,7 @@
   <link rel="stylesheet" href="styles.css?v=location-details-flow-9">
   <link rel="stylesheet" href="workflow.css?v=complaint-flow-5">
 </head>
-<body>
+<body data-required-role="staff">
   <div class="app-shell">
     <aside class="sidebar">
       <a class="brand" href="#overview" aria-label="Mana Nagaram home">
@@ -37,7 +37,7 @@
     <main class="main">
       <header class="topbar">
         <div class="breadcrumb"><span>City operations</span><b>/</b><strong>Priority overview</strong></div>
-        <div class="topbar-right"><span class="data-pill"><i></i> SIMULATED DATA</span><span class="top-date">Jan — Dec 2025</span><a class="button button-light" href="citizen.html">Citizen portal ↗</a><button id="methodButton" class="top-icon" aria-label="Open scoring method">?</button></div>
+        <div class="topbar-right"><span class="data-pill"><i></i> SIMULATED DATA</span><span class="top-date">Jan — Dec 2025</span><a class="button button-light" href="citizen.html">Citizen portal ↗</a><a class="button button-light" id="accountLink" href="auth.html">Sign in</a><button id="methodButton" class="top-icon" aria-label="Open scoring method">?</button></div>
       </header>
 
       <div class="page-wrap">
@@ -131,8 +131,8 @@
                 <div class="detail-disclosure-body"><div id="detailReasons" class="reason-list"></div><div class="issue-line"><span id="detailIssueIcon" class="issue-icon">↗</span><div><strong id="detailIssue">—</strong><small id="detailIssueSub">incident type</small></div><span id="detailIssueCount" class="issue-count">—</span></div></div>
               </details>
               <div class="decision-evidence-grid" aria-label="Review actions and field evidence">
-                <details class="detail-disclosure decision-disclosure" open data-open-on-select>
-                  <summary><span>Record a human review</span><span id="decisionSavedState" class="decision-state">No decision</span></summary>
+                <section class="detail-disclosure decision-disclosure">
+                  <div class="decision-section-heading"><span>Record a human review</span><span id="decisionSavedState" class="decision-state">No decision</span></div>
                   <section class="decision-panel" aria-labelledby="decisionHeading">
                     <div class="decision-heading"><div><div class="detail-subhead">HUMAN REVIEW</div><strong id="decisionHeading">Record a next step</strong></div></div>
                     <label class="decision-label" for="decisionAction">Recommended action</label>
@@ -142,12 +142,12 @@
                     <button id="saveDecision" class="button button-dark decision-save" type="button">Save review decision</button>
                     <p class="decision-foot">Saved in this browser only. Avoid personal or confidential information.</p>
                   </section>
-                </details>
-                <details class="detail-disclosure field-reports" aria-labelledby="fieldReportsHeading" open data-open-on-select>
-                  <summary><span id="fieldReportsHeading">Field photos and reports</span><span id="fieldReportCount" class="decision-state">0 reports</span></summary>
+                </section>
+                <section class="detail-disclosure field-reports" aria-labelledby="fieldReportsHeading">
+                  <div class="decision-section-heading"><span id="fieldReportsHeading">Field evidence</span><span id="fieldReportCount" class="decision-state">0 reports</span></div>
                   <div id="fieldReportList" class="field-report-list"></div>
-                  <details class="field-report-details" id="fieldReportDetails" open data-open-on-select>
-                    <summary>Add field report and photos</summary>
+                  <div class="field-report-details" id="fieldReportDetails">
+                    <div class="field-report-details-heading"><strong>Add a field report</strong><span>Record what you found on site</span></div>
                     <form id="fieldReportForm" class="field-report-form">
                     <label class="decision-label" for="reportType">Problem type</label>
                     <select id="reportType" required></select>
@@ -170,8 +170,8 @@
                     <p class="decision-foot">Photos, exact locations, and reports stay on this device in this demo. Avoid faces, license plates, and personal details.</p>
                     <button id="saveFieldReport" class="button button-dark decision-save" type="submit">Save field report</button>
                     </form>
-                  </details>
-                </details>
+                  </div>
+                </section>
               </div>
               <div class="detail-caution"><span>ⓘ</span><span>Use this as a prompt for human review. Synthetic records are not operational evidence.</span></div>
             </aside>
@@ -205,5 +205,5 @@
   <script src="data.js?v=review-workspace-4"></script>
   <script src="app.js?v=assistant-simple-2"></script>
   <script src="citizen-admin.js?v=complaint-flow-1"></script>
-</body>
+<script src="supabase-config.js"></script><script type="module" src="auth.js"></script>`n</body>
 </html>

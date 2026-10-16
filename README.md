@@ -45,3 +45,13 @@ All data and model results are synthetic educational material, not operational e
 
 Run `python prepare_data.py` from this folder to rebuild the aggregate data and compressed case history. Then run `python train_model.py` to rebuild the experimental Random Forest model artifact.
 
+
+## Supabase account setup
+
+This GitHub Pages prototype now includes Supabase sign-in and role-gated portal routes. To activate it:
+1. Create a Supabase project in the dashboard.
+2. In Project Settings → API, copy the Project URL and **publishable** key into `supabase-config.js`.
+3. Run `supabase-setup.sql` in the Supabase SQL Editor. Citizen sign-ups receive the citizen role; a project owner must grant staff role to staff accounts.
+4. Add the GitHub Pages URL to Supabase Auth's allowed redirect URLs.
+
+Never place a secret/service-role key in browser code. The current reports still use browser storage; they will not sync between accounts/devices until report storage is migrated to Supabase with Row Level Security policies.

@@ -11,11 +11,11 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
     <script src="citizen.js?v=citizen-layout-v4" defer></script>
   </head>
-  <body class="citizen-body">
+  <body class="citizen-body" data-required-role="citizen">
     <header class="citizen-header">
       <a class="brand citizen-brand" href="#home" aria-label="Mana Nagaram home"><span class="brand-mark" aria-hidden="true">⌁</span><span><strong>Mana Nagaram</strong><small>Make your neighborhood heard</small></span></a>
       <nav class="citizen-nav" aria-label="Citizen navigation"><a href="#reportIssue">Report an issue</a><a href="#track">Track a report</a><a href="#myReports">My complaints <span id="myReportCount">0</span></a></nav>
-      <a class="button button-outline role-switch" href="index.html">Staff workspace ↗</a>
+      <a class="button button-outline" id="accountLink" href="auth.html">Sign in</a><a class="button button-outline role-switch" href="index.html">Staff workspace ↗</a>
     </header>
 
     <main class="citizen-main" id="home">
@@ -63,5 +63,5 @@
 
     <footer class="citizen-footer"><a class="brand citizen-brand" href="#home"><span class="brand-mark" aria-hidden="true">⌁</span><span><strong>Mana Nagaram</strong><small>Make your neighborhood heard</small></span></a><p>Mana Nagaram demo · Synthetic operations data · Reports stay in this browser.</p><a href="index.html">Staff workspace ↗</a></footer>
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  </body>
+  <script src="supabase-config.js"></script><script type="module" src="auth.js"></script>`n  </body>
 </html>
