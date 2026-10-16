@@ -634,3 +634,10 @@ body { font-size: 16px; line-height: 1.55; color: #18323a; }
   .field-report-details > summary { min-height: 54px; }
   .detail-caution { margin-top: 2px; padding: 13px; }
 }
+
+@media (max-width: 680px) {
+  .sidebar { min-height: 104px; padding: 7px 14px 9px; display: flex; flex-wrap: wrap; align-content: center; gap: 4px; }
+  .brand { flex: 0 0 100%; padding: 0; }
+  .nav-list { width: 100%; flex: 1 0 100%; justify-content: space-between; gap: 4px; overflow-x: auto; }
+  .nav-item, .nav-item:not(.active):not(:hover), .nav-item:nth-child(n+3) { flex: 1 0 auto; justify-content: center; min-width: max-content; }
+}
