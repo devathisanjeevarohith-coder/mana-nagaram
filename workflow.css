@@ -97,6 +97,9 @@ body { background: var(--bg); color: var(--ink); }
 .inbox-empty { padding: 30px; border: 1px dashed #d8d1c8; border-radius: 12px; background: #fffdfa; text-align: center; }
 .inbox-empty strong { font-size: 15px; }
 .inbox-empty p { color: var(--muted); font-size: 11px; }
+.profile-switch { color: inherit; text-decoration: none; border-radius: 9px; transition: background .16s ease; }
+.profile-switch:hover { background: #f2e5dd; }
+.profile-switch:focus-visible, .role-switch-nav:focus-visible { outline: 2px solid #b65b41; outline-offset: 2px; }
 
 @media(max-width:900px) {
   .inbox-toolbar { grid-template-columns: 1fr 1fr; }
