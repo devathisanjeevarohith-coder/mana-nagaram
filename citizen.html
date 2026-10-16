@@ -7,9 +7,9 @@
     <meta name="description" content="Report and track local civic issues with Mana Nagaram." />
     <title>Mana Nagaram | Citizen portal</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <link rel="stylesheet" href="citizen.css?v=complaint-workflow-1" />
+    <link rel="stylesheet" href="citizen.css?v=citizen-layout-v2" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
-    <script src="citizen.js" defer></script>
+    <script src="citizen.js?v=citizen-layout-v2" defer></script>
   </head>
   <body class="citizen-body">
     <header class="citizen-header">
@@ -19,15 +19,16 @@
     </header>
 
     <main class="citizen-main" id="home">
+      <section class="citizen-quick-action" aria-label="Quick actions">
+        <div class="quick-action-copy"><span class="quick-action-mark">↗</span><div><strong>What would you like to do?</strong><small>Ask for a report, status, or history and we’ll take you there.</small></div></div>
+        <form class="quick-action-form" id="citizenCommandForm"><label class="sr-only" for="citizenCommand">What would you like to do?</label><input id="citizenCommand" type="text" maxlength="180" placeholder="Report a pothole near Central Market · Track CF-2026-ABC123 · Show my complaints" /><button class="button button-primary" type="submit">Go <span>→</span></button></form>
+        <p class="quick-action-result" id="citizenCommandResult" aria-live="polite">Try a request in your own words. You’ll review a report before saving it.</p>
+        <button id="enableNotifications" class="notification-toggle" type="button">Enable reminders</button>
+      </section>
+
       <section class="citizen-hero">
         <div class="citizen-hero-copy"><p class="eyebrow">A CLEARER WAY TO FIX WHAT MATTERS</p><h1>Your street. Your report. A city that can respond.</h1><p>Tell the city about a pothole, blocked drain, broken light, or other local issue. Follow the status of reports saved in this browser.</p><a class="button button-primary" href="#reportIssue">Report a problem <span>↓</span></a><div class="citizen-promise"><span class="promise-icon">✓</span><span>No account needed</span><i></i><span>Your report stays in this browser</span></div></div>
         <div class="hero-illustration" aria-hidden="true"><div class="hero-map-grid"><span class="hero-road hero-road-a"></span><span class="hero-road hero-road-b"></span><span class="hero-road hero-road-c"></span><span class="hero-block block-a"></span><span class="hero-block block-b"></span><span class="hero-block block-c"></span><span class="hero-block block-d"></span><span class="hero-pin"><b>!</b></span><span class="hero-pin-small"></span></div><div class="hero-float-card"><span class="hero-float-icon">✓</span><span><strong>Every report counts</strong><small>Help your neighborhood get noticed</small></span></div></div>
-      </section>
-
-      <section class="citizen-quick-action" aria-label="Quick actions">
-        <div class="quick-action-copy"><span class="quick-action-mark">↗</span><div><strong>What would you like to do?</strong><small>Type a request and Mana Nagaram will take you to the right place.</small></div></div>
-        <form class="quick-action-form" id="citizenCommandForm"><label class="sr-only" for="citizenCommand">What would you like to do?</label><input id="citizenCommand" type="text" maxlength="180" placeholder="e.g. report a pothole, track CF-2026-ABC123, show my complaints" /><button class="button button-primary" type="submit">Go <span>→</span></button></form>
-        <p class="quick-action-result" id="citizenCommandResult" aria-live="polite">Try reporting an issue, tracking a report code, or viewing your submitted complaints.</p>
       </section>
 
       <section class="citizen-how" aria-label="How it works"><article><span>01</span><div><strong>Tell us what you see</strong><small>Choose an issue and describe the spot.</small></div></article><article><span>02</span><div><strong>Pin the location</strong><small>Place a marker on the map for clarity.</small></div></article><article><span>03</span><div><strong>Follow the update</strong><small>Use your report code to check its status.</small></div></article></section>

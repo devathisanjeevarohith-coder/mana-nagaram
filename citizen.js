@@ -2,6 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'cityfix-citizen-reports-v1';
+  const NOTIFY_KEY = 'cityfix-notifications-v1';
   const DEFAULT_CENTER = [16.458373, 80.404599];
   const MAX_PHOTO_BYTES = 1024 * 1024;
   const allowedStatuses = ['Received', 'Under review', 'Scheduled', 'Resolved', 'Not actionable'];
@@ -37,6 +38,8 @@
     $('#clearReportPin').addEventListener('click', clearPin);
     observeCitizenSections();
     $('#citizenCommandForm').addEventListener('submit', handleCitizenCommand);
+    $('#enableNotifications').addEventListener('click', enableNotifications);
+    syncNotificationButton();
     $('#myReportSearch').addEventListener('input', (event) => { reportSearch = event.target.value.trim().toLowerCase(); renderReports(); });
     $('#myReportFilter').addEventListener('change', (event) => { reportFilter = event.target.value; renderReports(); });
     $('#citizenReportList').addEventListener('click', (event) => {
@@ -46,9 +49,24 @@
       trackReport();
       navigateCitizen('track');
     });
+    $('#citizenReportList').addEventListener('submit', submitCitizenFollowup);
+    $('#trackResult').addEventListener('submit', submitCitizenFollowup);
     window.setInterval(() => { if (document.visibilityState === 'visible') { renderReports(); if (trackedReportCode) trackReport(); } }, 60_000);
     window.addEventListener('storage', (event) => {
-      if (event.key === STORAGE_KEY) { reports = readReports(); renderReports(); if (trackedReportCode) { $('#trackForm').elements.namedItem('reportCode').value = trackedReportCode; trackReport(); } }
+      if (event.key === STORAGE_KEY) {
+        const previous = reports;
+        reports = readReports();
+        reports.forEach((report) => {
+          const old = previous.find((item) => item.id === report.id);
+          if (!old) {
+            const nearby = previous.some((item) => sameArea(item, report));
+            sendNotification(nearby ? 'New report near a location you follow' : 'A new city report was added', nearby ? `${report.category}: ${report.place}` : 'Open My complaints to review the report activity.');
+          } else if (old.status !== report.status || old.publicUpdate !== report.publicUpdate) {
+            sendNotification('Your complaint has an update', `${report.id} is now ${report.status}${report.publicUpdate ? ` · ${report.publicUpdate}` : ''}`);
+          }
+        });
+        renderReports(); if (trackedReportCode) { $('#trackForm').elements.namedItem('reportCode').value = trackedReportCode; trackReport(); }
+      }
     });
     renderReports();
   }
@@ -80,7 +98,7 @@
       result.textContent = `Showing ${reports.length} complaint${reports.length === 1 ? '' : 's'} saved in this browser.`;
       return;
     }
-    if (/\b(staff|admin|operations)\b/.test(q)) { location.href = 'admin.html'; return; }
+    if (/\b(staff|admin|operations)\b/.test(q)) { location.href = 'index.html'; return; }
     if (/\b(report|submit|file|raise|new complaint|new issue|pothole|road damage|drain|flood|street ?light|lamp|signal|traffic light|collision|crash|accident|waste|garbage|trash|sanitation)\b/.test(q)) {
       const categories = [
         [/pothole|road damage/, 'Pothole'], [/drain|sewer|waterway/, 'Blocked drain'], [/flood|waterlogging/, 'Flooding'],
@@ -88,13 +106,51 @@
         [/waste|garbage|trash|sanitation/, 'Waste or sanitation']
       ];
       const match = categories.find(([pattern]) => pattern.test(q));
-      if (match) $('#citizenReportForm').elements.namedItem('category').value = match[1];
+      const form = $('#citizenReportForm');
+      const category = form.elements.namedItem('category');
+      const title = form.elements.namedItem('title');
+      const place = form.elements.namedItem('place');
+      const description = form.elements.namedItem('description');
+      if (match) category.value = match[1];
+      const placeMatch = query.match(/\b(?:at|near|on)\s+(.+?)(?=\s+(?:because|where|with details?)\b|\s*[:,-]\s*|$)/i);
+      const detailMatch = query.match(/(?:because|details?\s*[:=]?|saying|\bthat\b|:\s*)(.+)$/i);
+      if (placeMatch?.[1]) place.value = placeMatch[1].trim().replace(/[.!?]+$/, '').slice(0, 120);
+      if (match && place.value) title.value = `${match[1]} near ${place.value}`.slice(0, 70);
+      if (detailMatch?.[1] && detailMatch[1].trim().length >= 15) description.value = detailMatch[1].trim().slice(0, 500);
+      else if (match && place.value) description.value = `Please inspect this ${match[1].toLowerCase()} near ${place.value}.`;
       navigateCitizen('reportIssue');
-      $('#citizenReportForm').elements.namedItem(match ? 'title' : 'category').focus();
-      result.textContent = match ? `${match[1]} selected. Add the location and details, then save your complaint.` : 'Choose an issue type, add its location and details, then save your complaint.';
+      const focus = !category.value ? category : !title.value ? title : !place.value ? place : description;
+      focus.focus();
+      result.textContent = match && place.value ? `Draft ready: ${match[1]} near ${place.value}. Review the details and press Save report.` : match ? `${match[1]} selected. Add the location and details, review, then save your report.` : 'The report form is ready. Choose an issue type, location, and details, then save.';
       return;
     }
     result.textContent = 'I can open the complaint form, track a code, show your complaint history, or open the staff workspace. Try one of those requests.';
+  }
+
+  function sameArea(a, b) {
+    if (a.latitude && b.latitude) {
+      const dLat = (Number(a.latitude) - Number(b.latitude)) * 111;
+      const dLon = (Number(a.longitude) - Number(b.longitude)) * 90;
+      if (Math.hypot(dLat, dLon) <= .5) return true;
+    }
+    const normalize = (value) => String(value || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+    return normalize(a.place) && normalize(a.place) === normalize(b.place);
+  }
+
+  async function enableNotifications() {
+    if (!('Notification' in window)) { showToast('This browser does not support reminders. Updates remain in My complaints.'); return; }
+    const permission = Notification.permission === 'default' ? await Notification.requestPermission() : Notification.permission;
+    if (permission === 'granted') { localStorage.setItem(NOTIFY_KEY, 'on'); syncNotificationButton(); showToast('Complaint reminders are enabled on this browser.'); }
+    else showToast('Allow notifications in your browser settings to receive reminders.');
+  }
+
+  function syncNotificationButton() {
+    const button = $('#enableNotifications');
+    if (button) button.textContent = localStorage.getItem(NOTIFY_KEY) === 'on' && window.Notification?.permission === 'granted' ? 'Reminders on ✓' : 'Enable reminders';
+  }
+
+  function sendNotification(title, body) {
+    if (localStorage.getItem(NOTIFY_KEY) === 'on' && window.Notification?.permission === 'granted' && document.visibilityState !== 'visible') new Notification(title, { body, tag: title + body });
   }
 
   function navigateCitizen(section) {
@@ -222,7 +278,33 @@
       return;
     }
     const resolvedDays = report.status === 'Resolved' && report.resolvedAt ? ` · Resolved in ${resolutionLabel(report.createdAt, report.resolvedAt)}` : '';
-    result.innerHTML = `<article class="track-result-card"><div><span class="report-code">${escapeHtml(report.id)}</span><span class="report-status status-${statusClass(report.status)}">${escapeHtml(report.status)}</span></div><h3>${escapeHtml(report.title)}</h3><p>${escapeHtml(report.category)} · ${escapeHtml(report.place)}</p><small>Submitted ${escapeHtml(formatDate(report.createdAt))}${report.department && report.department !== 'Unassigned' ? ` · ${escapeHtml(report.department)}` : ''}${report.assignee ? ` · ${escapeHtml(report.assignee)}` : ''}${resolvedDays}</small><div class="report-timing">${timingText(report)}</div>${renderProgress(report.status)}${report.publicUpdate ? `<div class="public-update"><strong>Latest staff update</strong><p>${escapeHtml(report.publicUpdate)}</p></div>` : '<div class="public-update muted-update">No staff update has been added yet.</div>'}${renderTimeline(report)}</article>`;
+    result.innerHTML = `<article class="track-result-card"><div><span class="report-code">${escapeHtml(report.id)}</span><span class="report-status status-${statusClass(report.status)}">${escapeHtml(report.status)}</span></div><h3>${escapeHtml(report.title)}</h3><p>${escapeHtml(report.category)} · ${escapeHtml(report.place)}</p><small>Submitted ${escapeHtml(formatDate(report.createdAt))}${report.department && report.department !== 'Unassigned' ? ` · ${escapeHtml(report.department)}` : ''}${report.assignee ? ` · ${escapeHtml(report.assignee)}` : ''}${resolvedDays}</small><div class="report-timing">${timingText(report)}</div>${renderProgress(report.status)}${report.publicUpdate ? `<div class="public-update"><strong>Latest staff update</strong><p>${escapeHtml(report.publicUpdate)}</p></div>` : '<div class="public-update muted-update">No staff update has been added yet.</div>'}${renderTimeline(report)}${renderCitizenFollowup(report)}</article>`;
+  }
+
+  function renderCitizenFollowup(report) {
+    if (['Resolved', 'Not actionable'].includes(report.status)) return '<p class="followup-closed">This report is closed. If the issue continues, please submit a new report.</p>';
+    return `<details class="citizen-followup"><summary>Add information for the city team</summary><form data-citizen-followup="${escapeHtml(report.id)}"><label>New detail or change<textarea name="message" rows="2" minlength="8" maxlength="420" required placeholder="Tell the team what has changed or add a useful detail."></textarea></label><div><small>Appears in the staff activity history on this browser.</small><button class="button button-primary" type="submit">Send follow-up ↗</button></div></form></details>`;
+  }
+
+  function submitCitizenFollowup(event) {
+    const form = event.target.closest('form[data-citizen-followup]');
+    if (!form) return;
+    event.preventDefault();
+    const report = reports.find((item) => item.id === form.dataset.citizenFollowup);
+    const message = String(new FormData(form).get('message') || '').trim();
+    if (!report || ['Resolved', 'Not actionable'].includes(report.status)) return;
+    if (message.length < 8) { showToast('Add a little more detail before sending.'); return; }
+    const now = new Date().toISOString();
+    if (!Array.isArray(report.history)) report.history = [];
+    report.history.push({ status: 'Citizen update', at: now, note: `Reporter added information: ${message}` });
+    report.updatedAt = now;
+    if (!saveReports()) return;
+    renderReports();
+    if (trackedReportCode === report.id) {
+      $('#trackForm').elements.namedItem('reportCode').value = report.id;
+      trackReport();
+    }
+    showToast('Follow-up added to the staff activity history in this browser.');
   }
 
   function renderReports() {
@@ -246,7 +328,7 @@
     list.innerHTML = matches.map((report) => {
       const image = typeof report.image === 'string' && report.image.startsWith('data:image/') ? `<img src="${escapeHtml(report.image)}" alt="Photo attached to ${escapeHtml(report.title)}" loading="lazy" />` : '';
       const latest = report.publicUpdate ? `<div class="public-update"><strong>Latest update</strong><p>${escapeHtml(report.publicUpdate)}</p></div>` : '';
-      return `<article class="citizen-report-card"><div class="citizen-report-card-top"><div><span class="report-code">${escapeHtml(report.id)}</span><span class="report-category">${escapeHtml(report.category)}</span></div><span class="report-status status-${statusClass(report.status)}">${escapeHtml(report.status)}</span></div><h3>${escapeHtml(report.title)}</h3><p class="report-place">⌖ ${escapeHtml(report.place)}${report.latitude ? ` · ${Number(report.latitude).toFixed(5)}, ${Number(report.longitude).toFixed(5)}` : ''}</p><p class="report-description">${escapeHtml(report.description)}</p><div class="report-timing">${timingText(report)}</div>${renderProgress(report.status)}${latest}${image}<div class="citizen-report-card-foot"><span>Submitted ${escapeHtml(formatDate(report.createdAt))}${report.assignee ? ` · ${escapeHtml(report.assignee)}` : ''}</span><button class="text-button" type="button" data-track="${escapeHtml(report.id)}">View timeline →</button></div></article>`;
+      return `<article class="citizen-report-card"><div class="citizen-report-card-top"><div><span class="report-code">${escapeHtml(report.id)}</span><span class="report-category">${escapeHtml(report.category)}</span></div><span class="report-status status-${statusClass(report.status)}">${escapeHtml(report.status)}</span></div><h3>${escapeHtml(report.title)}</h3><p class="report-place">⌖ ${escapeHtml(report.place)}${report.latitude ? ` · ${Number(report.latitude).toFixed(5)}, ${Number(report.longitude).toFixed(5)}` : ''}</p><p class="report-description">${escapeHtml(report.description)}</p><div class="report-timing">${timingText(report)}</div>${renderProgress(report.status)}${latest}${image}<div class="citizen-report-card-foot"><span>Submitted ${escapeHtml(formatDate(report.createdAt))}${report.assignee ? ` · ${escapeHtml(report.assignee)}` : ''}</span><button class="text-button" type="button" data-track="${escapeHtml(report.id)}">View timeline →</button></div>${renderCitizenFollowup(report)}</article>`;
     }).join('');
   }
 

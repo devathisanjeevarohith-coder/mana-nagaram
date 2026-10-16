@@ -7,6 +7,8 @@
   let reports = readReports();
   let filter = 'all';
   let search = '';
+  let priorOverdue = null;
+  let deskToastTimer = null;
 
   function readReports() {
     try {
@@ -54,6 +56,8 @@
     }).sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
     const openCount = reports.filter((report) => !['Resolved', 'Not actionable'].includes(report.status)).length;
     const overdueCount = reports.filter((report) => !['Resolved', 'Not actionable'].includes(report.status) && report.targetAt && new Date(report.targetAt).getTime() < Date.now()).length;
+    if (priorOverdue !== null && overdueCount > priorOverdue) deskNotice(`${overdueCount - priorOverdue} complaint${overdueCount - priorOverdue === 1 ? '' : 's'} passed the target time.`);
+    priorOverdue = overdueCount;
     const done = reports.filter((report) => report.status === 'Resolved' && report.resolvedAt);
     const avgHours = done.length ? Math.round(done.reduce((sum, report) => sum + Math.max(0, new Date(report.resolvedAt) - new Date(report.createdAt)) / 3600000, 0) / done.length) : null;
     $('#citizenInboxTotal').textContent = String(reports.length);
@@ -200,13 +204,34 @@
   }
 
   function init() {
+    $('#enableDeskNotifications').addEventListener('click', async () => {
+      if (!('Notification' in window)) { alert('This browser does not support desktop alerts. Keep the workspace open to review its overdue-target count.'); return; }
+      const permission = Notification.permission === 'default' ? await Notification.requestPermission() : Notification.permission;
+      if (permission === 'granted') { localStorage.setItem('cityfix-notifications-v1', 'on'); $('#enableDeskNotifications').textContent = 'Desk alerts on ✓'; }
+      else alert('Allow browser notifications to receive desk alerts.');
+    });
     $('#citizenStatusFilter').addEventListener('change', (event) => { filter = event.target.value; render(); });
     $('#citizenReportSearch').addEventListener('input', (event) => { search = event.target.value.trim().toLowerCase(); render(); });
     $('#citizenReportList').addEventListener('submit', saveReport);
     $('#adminCommandForm').addEventListener('submit', handleCommand);
-    window.addEventListener('storage', (event) => { if (event.key === KEY) { reports = readReports(); render(); } });
+    window.addEventListener('storage', (event) => {
+      if (event.key === KEY) {
+        const previous = reports; reports = readReports();
+        const added = reports.filter((report) => !previous.some((item) => item.id === report.id));
+        if (added.length) deskNotice(`${added.length} new citizen report${added.length === 1 ? '' : 's'} received. Review the inbox.`);
+        render();
+      }
+    });
     window.setInterval(() => { if (document.visibilityState === 'visible') { reports = readReports(); render(); } }, 60_000);
     render();
+  }
+
+  function deskNotice(message) {
+    if (localStorage.getItem('cityfix-notifications-v1') === 'on' && window.Notification?.permission === 'granted' && document.visibilityState !== 'visible') new Notification('Mana Nagaram desk reminder', { body: message });
+    else if (document.visibilityState === 'visible') {
+      const toast = $('#toast'); toast.textContent = message; toast.classList.add('visible');
+      clearTimeout(deskToastTimer); deskToastTimer = setTimeout(() => toast.classList.remove('visible'), 4200);
+    }
   }
 
   document.addEventListener('DOMContentLoaded', init);

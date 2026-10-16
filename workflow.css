@@ -100,6 +100,15 @@ body { background: var(--bg); color: var(--ink); }
 .profile-switch { color: inherit; text-decoration: none; border-radius: 9px; transition: background .16s ease; }
 .profile-switch:hover { background: #f2e5dd; }
 .profile-switch:focus-visible, .role-switch-nav:focus-visible { outline: 2px solid #b65b41; outline-offset: 2px; }
+.decision-evidence-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 14px; align-items: start; margin: 12px 0 16px; }
+.decision-evidence-grid > .detail-disclosure { min-width: 0; margin: 0; padding: 0 15px; border: 1px solid #e7ddd4; border-radius: 13px; background: #fffdfa; box-shadow: 0 4px 15px rgba(45,38,31,.035); overflow: hidden; }
+.decision-evidence-grid > .detail-disclosure > summary { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 57px; padding: 10px 0; color: #493f3a; font-size: 13px; line-height: 1.4; }
+.decision-evidence-grid > .detail-disclosure[open] > summary { margin: 0; border-bottom: 1px solid #eee5dd; }
+.decision-evidence-grid > .detail-disclosure > .decision-panel { margin: 0; padding: 13px 0 15px; border: 0; border-radius: 0; background: transparent; }
+.decision-evidence-grid .field-report-list { padding: 10px 0; }
+.decision-evidence-grid .field-report-details { padding: 0 0 13px; border-top: 1px solid #eee5dd; }
+.decision-evidence-grid .field-report-details > summary { min-height: 48px; color: var(--teal-dark); font-size: 11px; }
+@media(max-width:920px) { .decision-evidence-grid { grid-template-columns: minmax(0,1fr); } }
 
 @media(max-width:900px) {
   .inbox-toolbar { grid-template-columns: 1fr 1fr; }

@@ -202,7 +202,7 @@
       group.complaints += loc.complaintCount;
       grouped.set(loc.zone, group);
     });
-    const leaders = [...grouped.values()].map(x => ({...x, average: Math.round(x.score / x.count)})).sort((a, b) => b.average - a.average || b.count - a.count).slice(0, 3);
+    const leaders = [...grouped.values()].map(x => ({...x, average: Math.round(x.score / x.count)})).sort((a, b) => b.average - a.average || b.count - a.count).slice(0, 1);
     $('zoneLeaders').innerHTML = leaders.length ? leaders.map((x, i) => `<div class="zone-leader"><span class="zone-rank">0${i + 1}</span><div class="zone-main"><div class="zone-name">${x.zone.replace('_', ' ')}</div><div class="zone-meta">${fmt.format(x.count)} locations · ${fmt.format(x.incidents)} incidents · ${fmt.format(x.complaints)} complaints</div></div><div class="zone-index">${x.average}<small> avg</small></div></div>`).join('') : '<div class="empty-state">No zones match these filters.</div>';
     return leaders;
   }
