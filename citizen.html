@@ -7,9 +7,9 @@
     <meta name="description" content="Report and track local civic issues with Mana Nagaram." />
     <title>Mana Nagaram | Citizen portal</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <link rel="stylesheet" href="citizen.css?v=citizen-layout-v3" />
+    <link rel="stylesheet" href="citizen.css?v=citizen-layout-v4" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
-    <script src="citizen.js?v=citizen-layout-v3" defer></script>
+    <script src="citizen.js?v=citizen-layout-v4" defer></script>
   </head>
   <body class="citizen-body">
     <header class="citizen-header">
@@ -21,7 +21,7 @@
     <main class="citizen-main" id="home">
       <section class="citizen-quick-action" aria-label="Quick actions">
         <div class="quick-action-copy"><span class="quick-action-mark">↗</span><div><strong>What would you like to do?</strong><small>Ask for a report, status, or history and we’ll take you there.</small></div></div>
-        <form class="quick-action-form" id="citizenCommandForm"><label class="sr-only" for="citizenCommand">What would you like to do?</label><input id="citizenCommand" type="text" maxlength="180" placeholder="Report a pothole near Central Market · Track CF-2026-ABC123 · Show my complaints" /><button class="button button-primary" type="submit">Go <span>→</span></button></form>
+        <form class="quick-action-form" id="citizenCommandForm"><label class="sr-only" for="citizenCommand">What would you like to do?</label><input id="citizenCommand" type="text" maxlength="180" placeholder="Report a pothole near Central Market" /><button class="button button-primary" type="submit">Go <span>→</span></button></form>
         <p class="quick-action-result" id="citizenCommandResult" aria-live="polite">Try a request in your own words. You’ll review a report before saving it.</p>
         <button id="enableNotifications" class="notification-toggle" type="button">Enable reminders</button>
       </section>
