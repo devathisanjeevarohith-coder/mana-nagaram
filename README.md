@@ -21,8 +21,11 @@ No secrets, API keys, package installation, or external AI service are needed. T
 - Add up to three compressed field photos, an exact address, optional GPS, notes, severity, and a reviewable status.
 - Ask the evidence assistant questions about a location, zone, issue, severity, complaints, or open work. It computes answers from the supplied records and does not invent facts.
 - Record a human-selected next step and reviewer note for a location, then export either the filtered queue or saved decisions as CSV.
+- Use the separate citizen portal to submit a report, keep a report code, review all reports submitted in this browser, and follow status milestones, staff updates, and target completion time.
+- In the operations workspace, assign a department and staff owner, set or revise a target, post a public update, and keep an internal handover note. Resolve or close reports with a status update for the reporter.
+- Use the quick command field to open or resolve a report, assign a named staff member, filter open or resolved reports, find a location, jump to a zone, view trends or scoring, ask the evidence assistant, or export a queue.
 
-Review decisions, field reports, and photos are stored in the visitor's browser and do not sync between people or devices. This public static demo has no account system or shared database; use synthetic records only and do not enter personal or confidential information.
+Review decisions, field reports, citizen complaints, and photos are stored in the visitor's browser. Complaint updates sync across open tabs on the same browser and device; they do not reach a city service or sync between people and devices. This public static demo has no account system or shared database; use synthetic records only and do not enter personal or confidential information.
 
 ## Review index
 

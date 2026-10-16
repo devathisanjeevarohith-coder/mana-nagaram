@@ -1,0 +1,120 @@
+:root {
+  --bg: #f6f3ed;
+  --paper: #fffdfa;
+  --ink: #202d3b;
+  --muted: #717b87;
+  --line: #e7e2db;
+  --teal: #b65b41;
+  --teal-dark: #874531;
+  --teal-soft: #f4e8e1;
+  --blue: #647991;
+  --blue-soft: #edf0f4;
+  --coral: #b85d43;
+  --lime: #bc9561;
+  --shadow: 0 8px 26px rgba(46, 42, 36, .055);
+}
+body { background: var(--bg); color: var(--ink); }
+.sidebar { background: #fbf8f2; border-color: var(--line); }
+.brand em, .section-kicker { color: var(--teal); }
+.nav-item.active { color: var(--teal-dark); background: #f2e5dd; }
+.nav-item.active .nav-icon { color: var(--teal); }
+.status-indicator, .data-pill i { background: #bd8750; }
+.button-dark, .ask-form button { background: var(--teal-dark); }
+.button-dark:hover, .ask-form button:hover { background: #6f392a; }
+.button-light, .top-icon { border-color: #dfd5ca; color: #795342; }
+.button-light:hover { background: #f7eee7; border-color: #d8b9a7; }
+.ask-form input:focus, .sort-control select:focus, .decision-panel select:focus, .decision-panel textarea:focus { border-color: #c88d72; box-shadow: 0 0 0 3px #f7ece5; }
+.location-row.selected { background: #fbf0e9; box-shadow: inset 3px 0 0 var(--teal); }
+.location-row:nth-child(1) .row-rank { background: #f5e7de; color: #a6533b; }
+.priority-meter i { background: #c88b71; }
+.priority-score { color: #744635; }
+.priority-chip { background: #f5e8e0; color: #9c4c35; }
+.row-review.saved, .decision-state.is-saved { color: #9c4c35; }
+.decision-state.is-saved { background: #f6e9e1; }
+.decision-panel, .record-history { border-color: #eadfd6; background: #fcf7f2; }
+.record-stat, .field-report-card { border-color: #eadfd6; }
+.detail-card > .detail-disclosure > summary::after { background: #f3e7df; color: #a6533b; }
+.detail-card > .field-reports > summary, .detail-card > .detail-disclosure > summary { color: #493f3a; }
+.decision-panel select:focus, .decision-panel textarea:focus { border-color: #c88d72; }
+.detail-caution { border-color: #eadfcb; background: #faf5ea; }
+.filter-control input:focus, .filter-control select:focus { border-color: #c88d72; }
+
+.staff-command { display: grid; grid-template-columns: minmax(190px,.6fr) minmax(260px,1.5fr); align-items: center; gap: 8px 18px; margin: 0 0 22px; padding: 16px 18px; border: 1px solid #eadfd6; }
+.staff-command>div { display: grid; gap: 3px; }
+.staff-command>div strong { font-size: 14px; }
+.staff-command>div small, .staff-command>p { color: var(--muted); font-size: 11px; }
+.staff-command form { display: flex; gap: 8px; }
+.staff-command input { min-width: 0; flex: 1; height: 40px; padding: 0 12px; border: 1px solid var(--line); border-radius: 9px; background: #fff; color: var(--ink); }
+.staff-command input:focus { outline: 0; border-color: #c88d72; box-shadow: 0 0 0 3px #f7ece5; }
+.staff-command form .button { white-space: nowrap; }
+.staff-command>p { grid-column: 2; margin: 0; min-height: 15px; }
+
+.citizen-inbox-section { scroll-margin-top: 20px; margin-top: 30px; padding-top: 26px; border-top: 1px solid var(--line); }
+.inbox-total { display: flex; flex-direction: column; align-items: flex-end; color: var(--muted); font-size: 10px; }
+.inbox-total strong { color: var(--ink); font-size: 27px; line-height: 1.1; }
+.inbox-metrics { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 12px; margin: 14px 0; }
+.inbox-metric { display: grid; gap: 3px; padding: 14px 16px; border: 1px solid var(--line); border-radius: 12px; background: var(--paper); box-shadow: var(--shadow); }
+.inbox-metric span { color: var(--muted); font-size: 11px; }
+.inbox-metric strong { font-size: 25px; letter-spacing: -.04em; }
+.inbox-metric small { color: var(--muted); font-size: 10px; }
+.inbox-toolbar { display: grid; grid-template-columns: 180px minmax(220px,1fr) minmax(200px,1fr); gap: 14px; align-items: end; margin-bottom: 14px; padding: 14px; }
+.inbox-toolbar .filter-control>span { display: block; margin-bottom: 5px; color: var(--muted); font-size: 10px; }
+.inbox-toolbar input, .inbox-toolbar select { width: 100%; min-height: 38px; padding: 0 10px; border: 1px solid var(--line); border-radius: 8px; background: white; color: var(--ink); }
+.inbox-toolbar p { margin: 0 0 2px; color: var(--muted); font-size: 10px; line-height: 1.5; }
+.citizen-admin-list { display: grid; gap: 13px; }
+.admin-report-card { display: grid; grid-template-columns: minmax(0,1fr) minmax(320px,.92fr); overflow: hidden; border: 1px solid var(--line); border-radius: 13px; background: var(--paper); box-shadow: var(--shadow); }
+.admin-report-summary, .admin-report-form { min-width: 0; padding: 17px; }
+.admin-report-summary { border-right: 1px solid var(--line); }
+.admin-report-heading { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+.admin-report-heading>div { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; }
+.admin-report-heading>small, .admin-report-meta { color: var(--muted); font-size: 10px; }
+.admin-report-summary h3 { margin: 12px 0 4px; font-size: 18px; letter-spacing: -.025em; }
+.admin-report-summary>p { color: #536071; font-size: 12px; line-height: 1.55; }
+.admin-report-summary .admin-report-place { margin: 0 0 8px; color: var(--muted); font-size: 11px; }
+.admin-report-meta { display: grid; gap: 5px; margin-top: 13px; }
+.admin-report-meta span:last-child { color: #98563d; font-weight: 650; }
+.report-status { display: inline-flex; padding: 4px 8px; border-radius: 100px; font-size: 10px; font-weight: 700; }
+.status-received { color: #8c6733; background: #f6efdf; }
+.status-review { color: #5d708a; background: #eaf0f5; }
+.status-scheduled { color: #9c5d36; background: #f7ebe2; }
+.status-resolved { color: #56756f; background: #e9efec; }
+.status-closed { color: #767b83; background: #eef0f2; }
+.admin-recent-updates { margin-top: 13px; padding: 10px 12px; border-radius: 9px; background: #f7f3ee; }
+.admin-recent-updates>strong { font-size: 10px; }
+.admin-recent-updates p { margin: 6px 0 0; color: #566170; font-size: 10px; line-height: 1.45; }
+.admin-recent-updates time { display: block; color: #8b929b; font-size: 9px; }
+.admin-report-form { display: grid; gap: 11px; align-content: start; }
+.admin-report-form label { display: grid; gap: 5px; color: #536071; font-size: 10px; font-weight: 650; }
+.admin-form-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 9px; }
+.admin-report-form input, .admin-report-form select, .admin-report-form textarea { width: 100%; min-width: 0; border: 1px solid var(--line); border-radius: 7px; background: #fff; color: var(--ink); padding: 8px 9px; font-size: 11px; font-weight: 400; }
+.admin-report-form input, .admin-report-form select { min-height: 36px; }
+.admin-report-form textarea { resize: vertical; line-height: 1.45; }
+.admin-report-form input:focus, .admin-report-form select:focus, .admin-report-form textarea:focus { outline: 0; border-color: #c88d72; box-shadow: 0 0 0 3px #f7ece5; }
+.field-hint { color: #91959b; font-size: 9px; font-weight: 400; }
+.admin-form-foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.admin-save-status { color: var(--muted); font-size: 9px; }
+.admin-form-foot .button { padding: 9px 13px; font-size: 10px; }
+.inbox-empty { padding: 30px; border: 1px dashed #d8d1c8; border-radius: 12px; background: #fffdfa; text-align: center; }
+.inbox-empty strong { font-size: 15px; }
+.inbox-empty p { color: var(--muted); font-size: 11px; }
+
+@media(max-width:900px) {
+  .inbox-toolbar { grid-template-columns: 1fr 1fr; }
+  .inbox-toolbar p { grid-column: 1/-1; }
+  .admin-report-card { grid-template-columns: 1fr; }
+  .admin-report-summary { border-right: 0; border-bottom: 1px solid var(--line); }
+}
+@media(max-width:680px) {
+  .staff-command { grid-template-columns: 1fr; gap: 10px; padding: 14px; }
+  .staff-command>p { grid-column: 1; }
+  .staff-command form { flex-direction: column; }
+  .staff-command form .button { min-height: 39px; }
+  .inbox-metrics { grid-template-columns: 1fr 1fr; gap: 8px; }
+  .inbox-metric { padding: 11px; }
+  .inbox-metric:last-child { grid-column: 1/-1; }
+  .inbox-toolbar { grid-template-columns: 1fr; }
+  .inbox-toolbar p { grid-column: 1; }
+  .admin-form-grid { grid-template-columns: 1fr; }
+  .admin-report-heading { flex-direction: column; }
+  .admin-report-summary, .admin-report-form { padding: 14px; }
+}

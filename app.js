@@ -121,6 +121,7 @@
   function renderMap(loc) {
     if (!loc) {
       locationMap.removeAttribute('src');
+      mapSignature = '';
       mapCoordinates.textContent = 'Choose a problem from the review queue to see its map position.';
       mapLocationLabel.textContent = 'SELECT A PROBLEM';
       mapDisclaimer.textContent = 'Map positions from the supplied dataset are simulated examples.';
@@ -132,6 +133,15 @@
     const hasExactPin = Boolean(verified);
     const lat = hasExactPin ? verified.lat : Number(loc.lat);
     const lon = hasExactPin ? verified.lon : Number(loc.lon);
+    if (!Number.isFinite(lat) || !Number.isFinite(lon) || Math.abs(lat) > 90 || Math.abs(lon) > 180) {
+      locationMap.removeAttribute('src');
+      mapSignature = '';
+      mapCoordinates.textContent = 'A valid map position is not available for this record.';
+      mapLocationLabel.textContent = 'MAP POSITION UNAVAILABLE';
+      mapDisclaimer.textContent = 'Check the report address or enter corrected field coordinates before opening a map.';
+      googleMapsLink.href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(loc.id)}`;
+      return;
+    }
     const query = verified ? `${verified.lat},${verified.lon}` : (fieldReports[0]?.address || `${loc.lat},${loc.lon}`);
     const signature = `${loc.id}:${lat}:${lon}:${hasExactPin}`;
     if (signature !== mapSignature) {
