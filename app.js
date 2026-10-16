@@ -78,6 +78,10 @@
     .filter((loc) => state.issue === 'all' || (loc.incidentTypes[state.issue] || 0) > 0)
     .filter((loc) => !state.search || `${loc.id} ${loc.zone} ${loc.road} ${loc.topIssue}`.toLowerCase().includes(state.search))
     .sort((a, b) => {
+      if (state.sort === 'severity') {
+        return b.highCritical - a.highCritical || b.injuries - a.injuries
+          || b.avgSeverity - a.avgSeverity || b.priority - a.priority || a.id.localeCompare(b.id);
+      }
       const value = (loc) => state.sort === 'open' ? loc.openWork
         : state.sort === 'complaints' ? loc.complaintCount
         : state.sort === 'incidents' ? (state.issue === 'all' ? loc.incidentCount : (loc.incidentTypes[state.issue] || 0))

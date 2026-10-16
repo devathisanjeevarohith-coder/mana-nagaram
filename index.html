@@ -11,7 +11,7 @@
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <title>Mana Nagaram | City operations</title>
   <link rel="stylesheet" href="styles.css?v=light-clean-10">
-  <link rel="stylesheet" href="workflow.css?v=quick-agent-1">
+  <link rel="stylesheet" href="workflow.css?v=assistant-no-shortcuts-1">
 </head>
 <body>
   <div class="app-shell">
@@ -53,7 +53,6 @@
         <section class="staff-command card" aria-label="Ask Mana Nagaram">
           <div class="staff-command-heading"><span class="staff-command-icon" aria-hidden="true">✦</span><div class="staff-command-copy"><strong>What can I help you find?</strong><small>Ask in everyday words and I’ll take you there.</small></div></div>
           <form id="adminCommandForm"><label class="sr-only" for="adminCommand">Ask for a task</label><input id="adminCommand" maxlength="180" placeholder="Try “show unresolved complaints” or “open Zone 4”…"><button class="button button-dark" type="submit" aria-label="Go to requested task">Go <span aria-hidden="true">↗</span></button></form>
-          <div class="staff-command-shortcuts" aria-label="Try a quick request"><span>Try:</span><button type="button" data-command="Show unresolved complaints">Unresolved complaints</button><button type="button" data-command="Open zone 4">Open Zone 4</button><button type="button" data-command="Show signals and trends">View trends</button></div>
           <p id="adminCommandResult" aria-live="polite"></p>
         </section>
 
@@ -107,7 +106,7 @@
         </section>
 
         <section class="queue-section" id="queue">
-          <div class="queue-heading"><div><div class="section-kicker">REVIEW WORKLIST</div><h2>Priority queue</h2><p class="section-subtitle">Select a row to view its details.</p></div><div class="queue-tools"><label class="sort-control"><span>Rank by</span><select id="sortBy" aria-label="Rank locations by"><option value="priority">Review index</option><option value="forecast">ML forecast · Q4</option><option value="open">Open workload</option><option value="complaints">Complaints</option><option value="incidents">Incident count</option></select></label><div class="queue-total"><strong id="queueCount">—</strong><span>locations</span></div><span class="queue-reviewed" id="queueReviewCount">— reviewed</span></div></div>
+          <div class="queue-heading"><div><div class="section-kicker">REVIEW WORKLIST</div><h2>Priority queue</h2><p class="section-subtitle">Choose the signal you want to act on first.</p></div><div class="queue-tools"><label class="sort-control"><span>Rank by</span><select id="sortBy" aria-label="Rank locations by"><option value="priority">Balanced priority</option><option value="severity">High / critical risk</option><option value="open">Open workload</option><option value="complaints">Most complaints</option><option value="incidents">Most incidents</option><option value="forecast">Experimental forecast · Q4</option></select></label><div class="queue-total"><strong id="queueCount">—</strong><span>locations</span></div><span class="queue-reviewed" id="queueReviewCount">— reviewed</span></div></div>
           <div class="queue-layout">
             <article class="card table-card">
               <div class="table-topline"><span>LOCATION</span><span>INCIDENTS</span><span>COMPLAINTS</span><span>OPEN ITEMS</span><span>PRIORITY INDEX</span></div>
@@ -208,7 +207,7 @@
 
   <script src="google-maps-config.js?v=1"></script>
   <script src="data.js?v=review-workspace-4"></script>
-  <script src="app.js?v=queue-ten-3"></script>
+  <script src="app.js?v=queue-sort-2"></script>
   <script src="citizen-admin.js?v=complaint-flow-1"></script>
   </body>
 </html>
