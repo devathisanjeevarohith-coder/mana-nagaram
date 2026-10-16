@@ -50,9 +50,13 @@
 
   function render() {
     const filtered = [...reports].filter((report) => {
-      const text = `${report.id} ${report.title} ${report.category} ${report.place} ${report.department} ${report.assignee}`.toLowerCase();
+      const text = `${report.id} ${report.title} ${report.category} ${report.place} ${report.department} ${report.assignee}`.toLowerCase().replace(/_/g, ' ').replace(/\bzone\s+0+(\d+)/g, 'zone $1');
+      const query = search.replace(/_/g, ' ').replace(/\bzone\s+0+(\d+)/g, 'zone $1');
+      const queryTerms = query.split(/\s+/).filter(Boolean);
       const open = !['Resolved', 'Not actionable'].includes(report.status);
-      return (!search || text.includes(search)) && (filter === 'all' || (filter === 'open' ? open : report.status === filter));
+      const target = report.targetAt || new Date(new Date(report.createdAt || Date.now()).getTime() + suggestedHours(report.category) * 3600000).toISOString();
+      const overdue = open && new Date(target).getTime() < Date.now();
+      return (!queryTerms.length || queryTerms.every((term) => text.includes(term))) && (filter === 'all' || (filter === 'open' ? open : filter === 'overdue' ? overdue : report.status === filter));
     }).sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
     const openCount = reports.filter((report) => !['Resolved', 'Not actionable'].includes(report.status)).length;
     const overdueCount = reports.filter((report) => !['Resolved', 'Not actionable'].includes(report.status) && report.targetAt && new Date(report.targetAt).getTime() < Date.now()).length;
@@ -154,53 +158,137 @@
     event.preventDefault();
     const field = $('#adminCommand');
     const raw = field.value.trim();
-    const q = raw.toLowerCase();
+    const q = raw.normalize('NFKC').toLowerCase().replace(/[’']/g, ' ').replace(/[^a-z0-9#\s-]/g, ' ').replace(/\s+/g, ' ').trim();
     const result = $('#adminCommandResult');
-    if (!q) { result.textContent = 'Try “show unresolved complaints”, “assign CF-… to Asha”, “open zone 4”, or “export queue”.'; field.focus(); return; }
+    const say = (message) => { result.textContent = message; };
+    const go = (id) => { location.hash = id; document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' }); };
+    if (!q) { say('Tell me what you want to open, filter, find, update, or export.'); field.focus(); return; }
     const code = raw.match(/\bCF-\d{4}-[A-Z0-9]{6}\b/i)?.[0]?.toUpperCase();
     const report = code ? reports.find((item) => item.id.toUpperCase() === code) : null;
-    const assign = q.match(/\bassign\b/);
-    if (assign && code && report) {
-      const name = raw.match(/\bto\s+(.+)$/i)?.[1]?.trim();
-      if (!name) { navigateToInbox('all', code); $(`[data-report-form="${CSS.escape(report.id)}"] [name="assignee"]`)?.focus(); result.textContent = `Choose a staff member for ${report.id}, then save the assignment.`; return; }
+    const zone = q.match(/\b(?:zone|ward)\s*#?\s*0*(\d{1,2})\b/);
+    const issueRules = [
+      ['Pothole', /\bpotholes?\b/], ['Blocked drain', /\bdrains?|sewers?\b/], ['Flooding', /\bflood(?:ing)?|waterlogging\b/],
+      ['Streetlight outage', /\bstreet\s*lights?|lamps?\b/], ['Signal failure', /\bsignals?|traffic lights?\b/], ['Collision', /\bcollisions?|crashes?|accidents?\b/]
+    ];
+    const issueSelect = $('#issueFilter');
+    const matchedRule = issueRules.find(([, pattern]) => pattern.test(q));
+    const issueOption = matchedRule && [...issueSelect.options].find((option) => option.textContent === matchedRule[0]);
+    const locationCode = raw.match(/\bL\d{3,5}\b/i)?.[0]?.toUpperCase();
+    const sortRequest = /\b(sort|rank|order)\b/.test(q)
+      || (/\b(show|list|display|open|find|go to|take me to)\b/.test(q) && /\b(?:top|highest|most|largest)\s+(?:(?:\d+)\s+)?(?:open|pending|unresolved|complaints?|citizen reports?|incidents?|severity|severe|critical|risk|priority|workload|backlog|forecast|locations?)\b/.test(q));
+    const isQuestion = /\b(what|which|where|why|how many|how much|compare|highest|most|average|top)\b/.test(q);
+    if (/\b(assign|give|send)\b/.test(q) && code) {
+      if (!report) { navigateToInbox('all', code); say(`I couldn’t find ${code} in this browser. Check the code or open all reports.`); return; }
+      const name = raw.match(/\bto\s+(.+?)(?:\s+(?:and|then)\s+.*)?$/i)?.[1]?.trim();
+      if (!name) { navigateToInbox('all', code); $(`[data-report-form="${CSS.escape(report.id)}"] [name="assignee"]`)?.focus(); say(`Choose an assignee for ${report.id}, then save the update.`); return; }
       report.assignee = name;
       if (!report.department || report.department === 'Unassigned') report.department = suggestedDepartment(report.category);
       recordHistory(report, report.status || 'Received', `Assigned to ${name}${report.department !== 'Unassigned' ? ` · ${report.department}` : ''}.`);
-      writeReports(); navigateToInbox('all', code); result.textContent = `${report.id} assigned to ${name}. The update is visible in its activity history.`; return;
+      writeReports(); navigateToInbox('all', code); say(`${report.id} assigned to ${name}. The change is in its activity history.`); return;
     }
-    if ((/\b(resolve|resolved|mark done|close)\b/.test(q)) && code && report) {
+    if (code && /\b(resolve|resolved|complete|completed|close|mark done)\b/.test(q)) {
+      if (!report) { navigateToInbox('all', code); say(`I couldn’t find ${code} in this browser.`); return; }
       const now = new Date().toISOString(); report.status = 'Resolved'; report.resolvedAt = now;
       report.publicUpdate = 'This complaint has been marked as resolved.';
       recordHistory(report, 'Resolved', report.publicUpdate, now);
-      writeReports(); navigateToInbox('all', code); result.textContent = `${report.id} marked resolved and the reporter has a status update.`; return;
+      writeReports(); navigateToInbox('all', code); say(`${report.id} marked resolved. Its public status now shows the update.`); return;
     }
-    if (code) { navigateToInbox('all', code); result.textContent = report ? `Showing ${report.id} and its assignment and update controls.` : `No report ${code} is saved in this browser.`; return; }
-    if (/\b(unresolved|open|active)\b/.test(q)) { navigateToInbox('open'); result.textContent = 'Showing complaints that still need a next step.'; return; }
-    if (/\b(resolved|completed)\b/.test(q)) { navigateToInbox('Resolved'); result.textContent = 'Showing resolved complaints.'; return; }
-    if (/\b(complaints?|citizen reports?|intake|assign|staff)\b/.test(q)) { navigateToInbox('all'); result.textContent = 'Showing citizen reports and staff assignment controls.'; return; }
-    const zone = q.match(/\bzone\s*(\d{1,2})\b/);
-    if (zone) {
-      const select = $('#zoneFilter');
-      const option = [...select.options].find((item) => new RegExp(`(?:^|\\D)0*${zone[1]}(?:\\D|$)`).test(item.value));
-      if (option) { select.value = option.value; select.dispatchEvent(new Event('change', { bubbles: true })); location.hash = 'queue'; $('#queue').scrollIntoView({ behavior: 'smooth' }); result.textContent = `Showing ${option.textContent} in the priority queue.`; }
-      else result.textContent = `No zone ${zone[1]} is in the current review dataset.`;
+    const nextStatus = /\b(not actionable|invalid|duplicate)\b/.test(q) ? 'Not actionable'
+      : /\b(scheduled|inspection booked)\b/.test(q) ? 'Scheduled'
+      : /\b(under review|reviewing|being reviewed)\b/.test(q) ? 'Under review'
+      : /\b(received|new report)\b/.test(q) ? 'Received' : '';
+    if (code && nextStatus && /\b(status|mark|set|change|move|make|to)\b/.test(q)) {
+      if (!report) { navigateToInbox('all', code); say(`I couldn’t find ${code} in this browser.`); return; }
+      report.status = nextStatus;
+      report.resolvedAt = null;
+      report.publicUpdate = `Your report status is now ${nextStatus.toLowerCase()}.`;
+      recordHistory(report, nextStatus, report.publicUpdate);
+      writeReports(); navigateToInbox('all', code); say(`${report.id} updated to ${nextStatus}; the reporter can see the status update.`); return;
+    }
+    if (/\b(resolve|close|complete)\b/.test(q) && !code) {
+      navigateToInbox('open'); $('#citizenReportSearch').focus(); say('Open reports are shown. Enter the report code to resolve the right one.'); return;
+    }
+    const requestedStatus = /\b(overdue|past target|late)\b/.test(q) ? 'overdue' : /\b(resolved|completed|fixed|closed)\b/.test(q) ? 'Resolved' : /\b(open|unresolved|active|pending)\b/.test(q) ? 'open' : 'all';
+    if (code) {
+      navigateToInbox('all', code);
+      say(report ? `Showing ${report.id}; use its controls below to change status, assign staff, or set a target.` : `I couldn’t find ${code} in this browser. It may be saved on another device.`);
       return;
     }
-    const locationCode = raw.match(/\bL\d{3,5}\b/i)?.[0];
-    if (locationCode || /\b(find|search|location)\b/.test(q)) {
-      const searchText = locationCode || raw.replace(/\b(find|search|location|for|in|open)\b/ig, '').trim();
-      $('#searchInput').value = searchText; $('#searchInput').dispatchEvent(new Event('input', { bubbles: true }));
-      location.hash = 'queue'; $('#queue').scrollIntoView({ behavior: 'smooth' }); result.textContent = `Searching the priority queue for “${searchText}”.`; return;
+    const createReportRequest = /\b(new|raise|file|submit|create|make|start|log)\b/.test(q) && /\b(complaint|report|issue|problem|pothole|drain|flood|streetlight|signal)\b/.test(q)
+      || /^report\s+(?:a\s+|an\s+|the\s+)?(?:complaint|issue|problem|pothole|drain|flood|streetlight|signal)\b/.test(q);
+    if (createReportRequest) {
+      say('Opening the citizen report form.'); location.href = 'citizen.html#reportIssue'; return;
     }
     if (/\b(export|download)\b/.test(q)) {
       const button = /\b(log|decision|review)\b/.test(q) ? $('#exportActions') : $('#exportTop');
-      button.click(); result.textContent = /\b(log|decision|review)\b/.test(q) ? 'Review log exported.' : 'Priority queue exported.'; return;
+      button.click(); say(/\b(log|decision|review)\b/.test(q) ? 'Review log downloaded.' : 'Priority queue downloaded.'); return;
     }
-    if (/\b(trend|signals?)\b/.test(q)) { location.hash = 'signals'; $('#signals').scrollIntoView({ behavior: 'smooth' }); result.textContent = 'Showing signals and trends.'; return; }
-    if (/\b(method|score|scoring|how is|why is)\b/.test(q)) { $('#method').scrollIntoView({ behavior: 'smooth' }); $('#methodButton').click(); result.textContent = 'Showing the scoring method and its details.'; return; }
-    if (/\b(what|how many|compare|highest|most|why|which)\b/.test(q)) { $('#assistantInput').value = raw; $('#assistantForm').requestSubmit(); $('#signals').scrollIntoView({ behavior: 'smooth' }); result.textContent = 'Asked the evidence assistant about the supplied dataset.'; return; }
-    if (/\b(pothole|road|drain|flood|light|signal|traffic|waste|garbage|complaint|location|zone)\b/.test(q)) { $('#searchInput').value = raw; $('#searchInput').dispatchEvent(new Event('input', { bubbles: true })); location.hash = 'queue'; $('#queue').scrollIntoView({ behavior: 'smooth' }); result.textContent = `Searching the priority queue for “${raw}”.`; return; }
-    result.textContent = 'I can open or resolve a complaint, assign staff, show open or resolved reports, search a location, filter a zone, show trends or scoring, ask about the dataset, or export a queue.';
+    if (/\b(trends?|signals?|monthly reports?)\b/.test(q)) { go('signals'); say('Opened Signals & trends.'); return; }
+    if (/\b(scoring|score method|scoring method|how is.*rank|why.*rank)\b/.test(q)) { go('method'); $('#methodButton').click(); say('Opened the scoring method and details.'); return; }
+    if (/\b(complaints?|citizen reports?|intake|assign|staff|overdue)\b/.test(q) && !sortRequest && !isQuestion) {
+      const inboxTerms = [zone && `zone ${Number(zone[1])}`, matchedRule?.[0], locationCode].filter(Boolean);
+      navigateToInbox(requestedStatus, code || inboxTerms.join(' '));
+      const scope = inboxTerms.length ? ` matching ${inboxTerms.join(' · ')}` : '';
+      say(`${requestedStatus === 'overdue' ? 'Showing open reports past their target time' : requestedStatus === 'open' ? 'Showing open reports that need a next step' : requestedStatus === 'Resolved' ? 'Showing resolved reports' : 'Opened citizen reports and staff assignment controls'}${scope}.`);
+      return;
+    }
+
+    const sortBy = $('#sortBy');
+    const sortValue = sortRequest
+      ? /\b(sever|critical|danger|risk)\b/.test(q) ? 'severity'
+        : /\b(open|backlog|pending|workload)\b/.test(q) ? 'open'
+        : /\b(complaint|citizen)\b/.test(q) ? 'complaints'
+        : /\b(incident|event)\b/.test(q) ? 'incidents'
+        : /\b(forecast|predict|model)\b/.test(q) ? 'forecast'
+        : 'priority'
+      : '';
+    if (isQuestion && !sortRequest && !/\b(show|open|filter|find|search|go to|display)\b/.test(q)) {
+      if (zone || issueOption || locationCode) {
+        if (!zone) $('#zoneFilter').value = 'all';
+        if (!issueOption) issueSelect.value = 'all';
+        if (!locationCode) $('#searchInput').value = '';
+      }
+      if (zone) {
+        const zoneOption = [...$('#zoneFilter').options].find((item) => item.value.match(/\d+/)?.[0].replace(/^0+/, '') === String(Number(zone[1])));
+        if (!zoneOption) { say(`I can’t find Zone ${Number(zone[1])} in this review dataset.`); return; }
+        $('#zoneFilter').value = zoneOption.value;
+      }
+      if (issueOption) issueSelect.value = issueOption.value;
+      if (locationCode) $('#searchInput').value = locationCode;
+      $('#zoneFilter').dispatchEvent(new Event('change', { bubbles: true }));
+      issueSelect.dispatchEvent(new Event('change', { bubbles: true }));
+      $('#searchInput').dispatchEvent(new Event('input', { bubbles: true }));
+      $('#assistantInput').value = raw; $('#assistantForm').requestSubmit(); go('signals');
+      say('Answered from the available demo records in the evidence briefing.'); return;
+    }
+    if (zone || issueOption || locationCode || sortRequest) {
+      const applied = [];
+      if (zone || issueOption || locationCode) {
+        if (!zone) $('#zoneFilter').value = 'all';
+        if (!issueOption) issueSelect.value = 'all';
+        if (!locationCode) $('#searchInput').value = '';
+      }
+      if (zone) {
+        const zoneOption = [...$('#zoneFilter').options].find((item) => item.value.match(/\d+/)?.[0].replace(/^0+/, '') === String(Number(zone[1])));
+        if (zoneOption) { $('#zoneFilter').value = zoneOption.value; applied.push(zoneOption.textContent); }
+        else { say(`I can’t find Zone ${Number(zone[1])} in this review dataset.`); return; }
+      }
+      if (issueOption) { issueSelect.value = issueOption.value; applied.push(issueOption.textContent); }
+      if (locationCode) { $('#searchInput').value = locationCode; applied.push(locationCode); }
+      if (sortValue && [...sortBy.options].some((option) => option.value === sortValue)) { sortBy.value = sortValue; applied.push(`sorted by ${sortBy.selectedOptions[0].textContent.toLowerCase()}`); }
+      zoneFilter.dispatchEvent(new Event('change', { bubbles: true }));
+      issueSelect.dispatchEvent(new Event('change', { bubbles: true }));
+      sortBy.dispatchEvent(new Event('change', { bubbles: true }));
+      $('#searchInput').dispatchEvent(new Event('input', { bubbles: true }));
+      go('queue'); say(`Updated the priority queue: ${applied.join(' · ')}.`); return;
+    }
+    if (/\b(queue|locations?|priority list|worklist)\b/.test(q)) { go('queue'); say('Opened the priority queue.'); return; }
+    if (/\b(overview|dashboard|home|start)\b/.test(q)) { go('overview'); say('Back to the overview.'); return; }
+    if (/\b(find|search|locate|look up|open)\b/.test(q)) {
+      const searchText = raw.replace(/\b(please|find|search|locate|look up|open|location|for|the|in|at)\b/ig, '').trim();
+      if (searchText) { $('#searchInput').value = searchText; $('#searchInput').dispatchEvent(new Event('input', { bubbles: true })); go('queue'); say(`Searching locations for “${searchText}”.`); return; }
+    }
+    say('I couldn’t match that request. Try a report status or code, a zone or issue, queue sorting, trends, scoring, or an export.');
   }
 
   function init() {

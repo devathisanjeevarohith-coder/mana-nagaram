@@ -51,8 +51,8 @@
         </section>
 
         <section class="staff-command card" aria-label="Ask Mana Nagaram">
-          <div class="staff-command-heading"><span class="staff-command-icon" aria-hidden="true">✦</span><div class="staff-command-copy"><strong>What can I help you find?</strong><small>Ask in everyday words and I’ll take you there.</small></div></div>
-          <form id="adminCommandForm"><label class="sr-only" for="adminCommand">Ask for a task</label><input id="adminCommand" maxlength="180" placeholder="Try “show unresolved complaints” or “open Zone 4”…"><button class="button button-dark" type="submit" aria-label="Go to requested task">Go <span aria-hidden="true">↗</span></button></form>
+          <div class="staff-command-heading"><span class="staff-command-icon" aria-hidden="true">✦</span><div class="staff-command-copy"><strong>What can I help you find?</strong><small>Open a view, apply filters, or ask about the demo data.</small></div></div>
+          <form id="adminCommandForm"><label class="sr-only" for="adminCommand">Ask for a task</label><input id="adminCommand" maxlength="180" placeholder="e.g. overdue complaints, potholes in Zone 4, or how many open items"><button class="button button-dark" type="submit" aria-label="Go to requested task">Go <span aria-hidden="true">↗</span></button></form>
           <p id="adminCommandResult" aria-live="polite"></p>
         </section>
 
@@ -185,7 +185,7 @@
         <section class="citizen-inbox-section" id="citizenInbox">
           <div class="queue-heading"><div><div class="section-kicker">PUBLIC INTAKE</div><h2>Citizen reports</h2></div><div class="inbox-total"><strong id="citizenInboxTotal">0</strong><span>reports</span></div></div>
           <div class="inbox-metrics" id="citizenInboxMetrics"></div>
-          <div class="inbox-toolbar card"><label class="filter-control"><span>Status</span><div class="control-wrap"><select id="citizenStatusFilter"><option value="all">All statuses</option><option value="open">Open reports</option><option>Received</option><option>Under review</option><option>Scheduled</option><option>Resolved</option><option>Not actionable</option></select></div></label><label class="filter-control"><span>Find a report</span><div class="control-wrap"><input id="citizenReportSearch" type="search" placeholder="Code, issue, or location"></div></label><p><button class="notification-toggle" id="enableDeskNotifications" type="button">Enable desk alerts</button><span>New reports and overdue targets notify this browser when it is open.</span></p></div>
+          <div class="inbox-toolbar card"><label class="filter-control"><span>Status</span><div class="control-wrap"><select id="citizenStatusFilter"><option value="all">All statuses</option><option value="open">Open reports</option><option value="overdue">Past target</option><option>Received</option><option>Under review</option><option>Scheduled</option><option>Resolved</option><option>Not actionable</option></select></div></label><label class="filter-control"><span>Find a report</span><div class="control-wrap"><input id="citizenReportSearch" type="search" placeholder="Code, issue, or location"></div></label><p><button class="notification-toggle" id="enableDeskNotifications" type="button">Enable desk alerts</button><span>New reports and overdue targets notify this browser when it is open.</span></p></div>
           <div class="citizen-admin-list" id="citizenReportList"></div>
           <datalist id="assigneeOptions"><option value="Asha Rao"><option value="Vikram Singh"><option value="Meera Iyer"><option value="Arjun Kumar"><option value="Sneha Das"><option value="Ravi Kumar"><option value="Pooja Nair"><option value="Operations desk"></datalist>
         </section>
@@ -208,6 +208,6 @@
   <script src="google-maps-config.js?v=1"></script>
   <script src="data.js?v=review-workspace-4"></script>
   <script src="app.js?v=queue-sort-2"></script>
-  <script src="citizen-admin.js?v=complaint-flow-1"></script>
+  <script src="citizen-admin.js?v=command-router-3"></script>
   </body>
 </html>

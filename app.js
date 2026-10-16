@@ -233,6 +233,27 @@
       return;
     }
     if (!query) return;
+    if (/\b(how many|number of|count|total)\b/.test(query)) {
+      if (/complaint|citizen report/.test(query)) {
+        const total = rows.reduce((sum, loc) => sum + (/\b(open|active|unresolved|pending)\b/.test(query) ? loc.openComplaints : /\b(resolved|closed|completed)\b/.test(query) ? loc.complaintCount - loc.openComplaints : loc.complaintCount), 0);
+        $('briefingText').textContent = `There are ${fmt.format(total)} ${/\b(open|active|unresolved|pending)\b/.test(query) ? 'open ' : /\b(resolved|closed|completed)\b/.test(query) ? 'resolved ' : ''}complaints across ${fmt.format(rows.length)} locations in this view.`;
+        return;
+      }
+      if (/\b(critical|severe|injur|high priority)\b/.test(query)) {
+        const total = rows.reduce((sum, loc) => sum + (/injur/.test(query) ? loc.injuries : loc.highCritical), 0);
+        $('briefingText').textContent = `There are ${fmt.format(total)} ${/injur/.test(query) ? 'recorded injuries' : 'high or critical incidents'} across ${fmt.format(rows.length)} locations in this view.`;
+        return;
+      }
+      if (/\b(open|backlog|pending|work)\b/.test(query)) {
+        const total = rows.reduce((sum, loc) => sum + loc.openWork, 0);
+        $('briefingText').textContent = `${fmt.format(total)} incident and complaint work items are open across ${fmt.format(rows.length)} locations in this view.`;
+        return;
+      }
+      if (/\b(incidents?|reports?|potholes?|drains?|flood(?:ing)?|signals?|collisions?|streetlights?)\b/.test(query)) {
+        $('briefingText').textContent = `There are ${fmt.format(currentIncidentCount(rows))} incidents in this view across ${fmt.format(rows.length)} locations.`;
+        return;
+      }
+    }
     const locationId = query.match(/\bl\d{4}\b/i)?.[0]?.toUpperCase();
     if (locationId) {
       const loc = rows.find(item => item.id === locationId);
