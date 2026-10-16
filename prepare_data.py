@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import csv
+import gzip
 import json
 from collections import Counter, defaultdict
 from datetime import datetime
@@ -12,6 +13,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent
 RAW = ROOT / "data" / "raw" / "03_smart_city_where_fix_first"
 OUT = ROOT / "data.js"
+RECORDS_OUT = ROOT / "records.json.gz"
 
 
 def read_csv(name: str) -> list[dict[str, str]]:
@@ -32,6 +34,7 @@ locations = read_csv("locations.csv")
 incidents = read_csv("incidents.csv")
 complaints = read_csv("public_complaints.csv")
 by_location: dict[str, dict] = {}
+records_by_location: dict[str, list[dict]] = defaultdict(list)
 
 for row in locations:
     by_location[row["location_id"]] = {
@@ -78,6 +81,17 @@ for row in incidents:
     if loc is None:
         unmatched_incident_locations += 1
         continue
+    records_by_location[row["location_id"]].append({
+        "id": iid,
+        "kind": "Incident",
+        "date": row["timestamp"],
+        "type": row["incident_type"],
+        "severity": row["severity"],
+        "status": "Resolved" if row["resolved"] == "1" else "Open",
+        "injuries": int(number(row["injuries"])),
+        "reportedBy": row["reported_by"],
+        "resolutionHours": number(row["resolution_hours"]),
+    })
     kind = row["incident_type"]
     severity = severity_value.get(row["severity"], 2)
     loc["incidentCount"] += 1
@@ -101,6 +115,15 @@ for row in complaints:
     if loc is None:
         unmatched_complaint_locations += 1
         continue
+    records_by_location[row["location_id"]].append({
+        "id": cid,
+        "kind": "Complaint",
+        "date": row["created_at"],
+        "type": row["category"],
+        "severity": row["priority_reported"],
+        "status": row["status"],
+        "resolutionDays": number(row["days_to_resolution"]),
+    })
     loc["complaintCount"] += 1
     loc["highPriority"] += row["priority_reported"] == "High"
     loc["openComplaints"] += row["status"] in {"Open", "In progress", "Assigned"}
@@ -136,6 +159,12 @@ bundle = {
 }
 
 OUT.write_text("window.CITYFIX_DATA = " + json.dumps(bundle, separators=(",", ":")) + ";\n", encoding="utf-8")
+for items in records_by_location.values():
+    items.sort(key=lambda item: item["date"], reverse=True)
+records_json = json.dumps(records_by_location, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
+RECORDS_OUT.write_bytes(gzip.compress(records_json, mtime=0))
 print(f"Wrote {OUT.name}: {len(locations):,} locations, {len(incidents):,} incidents, {len(complaints):,} complaints")
+print(f"Wrote {RECORDS_OUT.name}: {len(records_json):,} bytes uncompressed")
 print(f"Unique IDs: {len(valid_incident_ids):,} incidents / {len(valid_complaint_ids):,} complaints")
 print(f"Unmatched location IDs: {unmatched_incident_locations} incidents / {unmatched_complaint_locations} complaints")
+

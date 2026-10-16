@@ -3,7 +3,6 @@
   const data = window.CITYFIX_DATA;
   if (!data || !Array.isArray(data.locations)) return;
 
-  const svgNS = 'http://www.w3.org/2000/svg';
   const fmt = new Intl.NumberFormat('en-US');
   const locations = data.locations;
   const percentile95 = (values) => {
@@ -45,9 +44,19 @@
   const issueFilter = $('issueFilter');
   const searchInput = $('searchInput');
   const methodDialog = $('methodDialog');
-  const mapSvg = $('mapSvg');
-  const mapTooltip = $('mapTooltip');
-  const mapStage = document.querySelector('.map-stage');
+  const locationMap = $('locationMap');
+  const mapCoordinates = $('mapCoordinates');
+  const googleMapsLink = $('googleMapsLink');
+  const mapLocationLabel = $('mapLocationLabel');
+  const mapDisclaimer = $('mapDisclaimer');
+  const fieldReportsStorageKey = 'cityfix-field-reports-v1';
+  const evidenceDatabaseName = 'cityfix-field-evidence-v1';
+  const recordsUrl = 'records.json.gz?v=field-evidence-1';
+  const googleMapsKey = window.CITYFIX_GOOGLE_MAPS_EMBED_KEY || '';
+  let forecastModel = null;
+  let recordsByLocationPromise;
+  let mapSignature = '';
+  let previewUrls = [];
   const reviewStorageKey = 'cityfix-review-decisions-v1';
   const reviewDecisions = (() => {
     try {
@@ -56,14 +65,12 @@
     } catch (_) { return {}; }
   })();
   const queueLabels = ['Incident volume', 'Average severity', 'Complaint volume', 'Open backlog', 'Street context'];
-  const bounds = {
-    minLat: Math.min(...locations.map(x => x.lat)), maxLat: Math.max(...locations.map(x => x.lat)),
-    minLon: Math.min(...locations.map(x => x.lon)), maxLon: Math.max(...locations.map(x => x.lon)),
-  };
   const state = {zone: 'all', issue: 'all', search: '', selected: null, expanded: false, sort: 'priority', mobileDetailOpen: false};
   const zones = [...new Set(locations.map(x => x.zone))].sort((a, b) => a.localeCompare(b));
   zones.forEach((zone) => zoneFilter.add(new Option(zone.replace('_', ' '), zone)));
   data.incidentTypes.forEach((type) => issueFilter.add(new Option(type, type)));
+  data.incidentTypes.forEach((type) => $('reportType').add(new Option(type, type)));
+  $('reportType').value = data.incidentTypes[0] || '';
 
   const scoreClass = (score) => score >= 66 ? 'high' : score >= 40 ? 'mid' : 'low';
   const currentRows = () => locations
@@ -74,6 +81,7 @@
       const value = (loc) => state.sort === 'open' ? loc.openWork
         : state.sort === 'complaints' ? loc.complaintCount
         : state.sort === 'incidents' ? (state.issue === 'all' ? loc.incidentCount : (loc.incidentTypes[state.issue] || 0))
+        : state.sort === 'forecast' ? (loc.predictedQ4 ?? -1)
         : loc.priority;
       return value(b) - value(a) || b.priority - a.priority || a.id.localeCompare(b.id);
     });
@@ -102,68 +110,77 @@
     $('mapScope').textContent = state.zone === 'all' ? 'ALL ZONES' : state.zone.replace('_', ' ');
   }
 
-  function renderMap(rows) {
-    mapSvg.replaceChildren();
-    const grid = document.createElementNS(svgNS, 'g');
-    for (let x = 90; x <= 700; x += 122) {
-      const line = document.createElementNS(svgNS, 'line');
-      line.setAttribute('x1', x); line.setAttribute('x2', x); line.setAttribute('y1', 20); line.setAttribute('y2', 322); line.setAttribute('class', 'grid-line'); grid.append(line);
+  function mapUrl(lat, lon) {
+    const delta = 0.012;
+    const west = (lon - delta).toFixed(5), east = (lon + delta).toFixed(5);
+    const south = (lat - delta).toFixed(5), north = (lat + delta).toFixed(5);
+    const bbox = `${west}%2C${south}%2C${east}%2C${north}`;
+    return `https://www.openstreetmap.org/export/embed.html?bbox=${bbox}&layer=mapnik&marker=${lat}%2C${lon}`;
+  }
+
+  function renderMap(loc) {
+    if (!loc) {
+      locationMap.removeAttribute('src');
+      mapCoordinates.textContent = 'Choose a problem from the review queue to see its map position.';
+      mapLocationLabel.textContent = 'SELECT A PROBLEM';
+      mapDisclaimer.textContent = 'Map positions from the supplied dataset are simulated examples.';
+      googleMapsLink.href = 'https://www.google.com/maps';
+      return;
     }
-    for (let y = 52; y <= 300; y += 82) {
-      const line = document.createElementNS(svgNS, 'line');
-      line.setAttribute('x1', 31); line.setAttribute('x2', 718); line.setAttribute('y1', y); line.setAttribute('y2', y); line.setAttribute('class', 'grid-line'); grid.append(line);
+    const fieldReports = getFieldReports().filter(report => report.locationId === loc.id).sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+    const verified = fieldReports.find(report => Number.isFinite(report.lat) && Number.isFinite(report.lon));
+    const hasExactPin = Boolean(verified);
+    const lat = hasExactPin ? verified.lat : Number(loc.lat);
+    const lon = hasExactPin ? verified.lon : Number(loc.lon);
+    const query = verified ? `${verified.lat},${verified.lon}` : (fieldReports[0]?.address || `${loc.lat},${loc.lon}`);
+    const signature = `${loc.id}:${lat}:${lon}:${hasExactPin}`;
+    if (signature !== mapSignature) {
+      locationMap.src = googleMapsKey
+        ? `https://www.google.com/maps/embed/v1/place?key=${encodeURIComponent(googleMapsKey)}&q=${encodeURIComponent(`${lat},${lon}`)}`
+        : mapUrl(lat, lon);
+      mapSignature = signature;
     }
-    mapSvg.append(grid);
-    const minX = 34, maxX = 712, minY = 22, maxY = 318;
-    const dx = Math.max(0.0001, bounds.maxLon - bounds.minLon);
-    const dy = Math.max(0.0001, bounds.maxLat - bounds.minLat);
-    rows.forEach((loc) => {
-      const x = minX + (loc.lon - bounds.minLon) / dx * (maxX - minX);
-      const y = maxY - (loc.lat - bounds.minLat) / dy * (maxY - minY);
-      const selected = loc.id === state.selected;
-      if (selected) {
-        const halo = document.createElementNS(svgNS, 'circle');
-        halo.setAttribute('cx', x); halo.setAttribute('cy', y); halo.setAttribute('r', 8); halo.setAttribute('class', 'map-halo'); mapSvg.append(halo);
-      }
-      const point = document.createElementNS(svgNS, 'circle');
-      point.setAttribute('cx', x); point.setAttribute('cy', y);
-      point.setAttribute('r', (1.6 + loc.priority / 47).toFixed(2));
-      point.setAttribute('fill', loc.priority >= 66 ? '#d77c69' : loc.priority >= 40 ? '#e2ad54' : '#76b49b');
-      point.setAttribute('opacity', selected ? '1' : '0.78');
-      point.setAttribute('class', `map-point${selected ? ' selected' : ''}`);
-      point.setAttribute('role', 'button');
-      point.setAttribute('tabindex', '0');
-      point.setAttribute('aria-label', `Select ${loc.id}, ${loc.zone.replace('_', ' ')}, review index ${loc.priority} out of 100`);
-      point.dataset.id = loc.id;
-      const title = document.createElementNS(svgNS, 'title');
-      title.textContent = `${loc.id} · ${loc.zone.replace('_', ' ')} · ${loc.priority}/100`;
-      point.append(title);
-      point.addEventListener('click', () => selectLocation(loc.id));
-      point.addEventListener('keydown', (event) => {
-        if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); selectLocation(loc.id); }
+    mapCoordinates.textContent = hasExactPin
+      ? `${verified.address} · ${lat.toFixed(5)}, ${lon.toFixed(5)}`
+      : `${loc.id} · ${lat.toFixed(5)}, ${lon.toFixed(5)} · example coordinate`;
+    mapLocationLabel.textContent = hasExactPin ? 'FIELD GPS LOCATION' : 'SIMULATED DATA POINT';
+    mapDisclaimer.textContent = hasExactPin
+      ? 'Pin is from a reviewer’s field report. Confirm the address and conditions before dispatch.'
+      : `This street map uses simulated dataset coordinates, not a verified problem location.${googleMapsKey ? '' : ' Google Maps embed needs a restricted API key; the map link below still opens Google Maps.'}`;
+    googleMapsLink.href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
+    googleMapsLink.setAttribute('aria-label', `Open ${verified ? verified.address : fieldReports[0]?.address || loc.id} in Google Maps`);
+  }
+
+  function modelFeatures(loc) {
+    const road = {Good: 0, Fair: 1, Poor: 2, Critical: 3};
+    const pedestrian = {Low: 0, Medium: 1, High: 2};
+    return [0,3,6].map(start => loc.monthIncidents.slice(start,start+3).reduce((a,b)=>a+b,0))
+      .concat([0,3,6].map(start => loc.monthComplaints.slice(start,start+3).reduce((a,b)=>a+b,0)))
+      .concat([road[loc.condition] ?? 1, pedestrian[loc.pedestrian] ?? 1, Number(loc.school), Number(loc.hospital), loc.density / 1000]);
+  }
+
+  function predictForest(tree, features) {
+    while (tree.v === undefined) tree = features[tree.f] <= tree.t ? tree.l : tree.r;
+    return tree.v;
+  }
+
+  async function loadForecastModel() {
+    try {
+      const response = await fetch('forecast-model.json?v=rf-holdout-1');
+      if (!response.ok) throw new Error('Model file could not be loaded.');
+      forecastModel = await response.json();
+      locations.forEach(loc => {
+        const features = modelFeatures(loc);
+        loc.predictedQ4 = Math.max(0, forecastModel.trees.reduce((sum, tree) => sum + predictForest(tree, features), 0) / forecastModel.trees.length);
       });
-      point.addEventListener('pointerenter', (event) => showTooltip(event, loc));
-      point.addEventListener('pointermove', (event) => moveTooltip(event));
-      point.addEventListener('pointerleave', () => { mapTooltip.style.display = 'none'; });
-      mapSvg.append(point);
-    });
-  }
-
-  function showTooltip(event, loc) {
-    mapTooltip.replaceChildren();
-    const title = document.createElement('strong');
-    title.textContent = `${loc.id} · ${loc.zone.replace('_', ' ')}`;
-    const description = document.createElement('span');
-    description.textContent = `${loc.priority}/100 review index · ${fmt.format(loc.incidentCount)} incidents`;
-    mapTooltip.append(title, description);
-    mapTooltip.style.display = 'block';
-    moveTooltip(event);
-  }
-
-  function moveTooltip(event) {
-    const rect = mapStage.getBoundingClientRect();
-    mapTooltip.style.left = `${event.clientX - rect.left}px`;
-    mapTooltip.style.top = `${event.clientY - rect.top}px`;
+      const m = forecastModel.metrics;
+      const comparison = m.mae < m.baselineMae ? 'It beats the mean baseline on this test.' : 'It does not beat the mean baseline, so treat its ranking as research only.';
+      $('forecastNote').textContent = `Random Forest · ${forecastModel.treeCount} trees · estimates Q4 incidents from Q1–Q3 history. Held-out MAE ${m.mae} vs mean-baseline MAE ${m.baselineMae}. ${comparison} Synthetic benchmark.`;
+      render();
+    } catch (error) {
+      $('forecastNote').textContent = 'The forecast model did not load. Review index and queue remain available.';
+      console.error('CityFix forecast:', error);
+    }
   }
 
   function renderZones(rows) {
@@ -288,13 +305,256 @@
         const inc = state.issue === 'all' ? loc.incidentCount : (loc.incidentTypes[state.issue] || 0);
         const saved = reviewDecisions[loc.id];
         const reviewLabel = saved ? 'Decision saved' : 'Needs review';
-        return `<button class="location-row${loc.id === state.selected ? ' selected' : ''}" data-id="${loc.id}" aria-label="View ${loc.id}, priority ${loc.priority}, ${reviewLabel}"><span class="row-location"><span class="row-rank">${String(i + 1).padStart(2, '0')}</span><span class="row-name"><strong>${loc.id} <span class="row-zone">· ${loc.zone.replace('_', ' ')}</span></strong><small>${loc.condition} road · ${displayIssue} · ${fmt.format(inc)} reports · ${fmt.format(loc.complaintCount)} complaints · ${fmt.format(loc.openWork)} open · <span class="row-review${saved ? ' saved' : ''}">${reviewLabel}</span></small></span></span><span class="row-number">${fmt.format(inc)}</span><span class="row-number muted">${fmt.format(loc.complaintCount)}</span><span class="row-number muted">${fmt.format(loc.openWork)}</span><span class="priority-cell"><span class="priority-meter"><i class="${cls}" style="width:${loc.priority}%"></i></span><strong class="priority-score">${loc.priority}</strong></span></button>`;
+        const forecast = Number.isFinite(loc.predictedQ4) ? ` · RF Q4 ${loc.predictedQ4.toFixed(1)}` : '';
+        return `<button class="location-row${loc.id === state.selected ? ' selected' : ''}" data-id="${loc.id}" aria-label="View ${loc.id}, priority ${loc.priority}, ${reviewLabel}${forecast}"><span class="row-location"><span class="row-rank">${String(i + 1).padStart(2, '0')}</span><span class="row-name"><strong>${loc.id} <span class="row-zone">· ${loc.zone.replace('_', ' ')}</span></strong><small>${loc.condition} road · ${displayIssue} · ${fmt.format(inc)} incidents · ${fmt.format(loc.complaintCount)} complaints · ${fmt.format(loc.openWork)} open${forecast} · <span class="row-review${saved ? ' saved' : ''}">${reviewLabel}</span></small></span></span><span class="row-number">${fmt.format(inc)}</span><span class="row-number muted">${fmt.format(loc.complaintCount)}</span><span class="row-number muted">${fmt.format(loc.openWork)}</span><span class="priority-cell"><span class="priority-meter"><i class="${cls}" style="width:${loc.priority}%"></i></span><strong class="priority-score">${state.sort === 'forecast' && Number.isFinite(loc.predictedQ4) ? loc.predictedQ4.toFixed(1) : loc.priority}</strong></span></button>`;
       }).join('');
       queueRows.querySelectorAll('.location-row').forEach((button) => button.addEventListener('click', () => selectLocation(button.dataset.id)));
     }
     $('tableShowing').textContent = rows.length ? `Showing ${fmt.format(displayRows.length)} of ${fmt.format(rows.length)} locations` : 'Showing 0 locations';
     $('showMore').style.display = rows.length > 8 ? 'inline-block' : 'none';
     $('showMore').innerHTML = state.expanded ? 'Show fewer <span>↑</span>' : 'Show more <span>↓</span>';
+  }
+
+  function getFieldReports() {
+    try {
+      const value = JSON.parse(localStorage.getItem(fieldReportsStorageKey) || '[]');
+      return Array.isArray(value) ? value.filter(report => report && typeof report === 'object' && report.id && report.locationId) : [];
+    } catch (_) { return []; }
+  }
+
+  function saveFieldReports(reports) {
+    try { localStorage.setItem(fieldReportsStorageKey, JSON.stringify(reports)); return true; }
+    catch (_) { showToast('This browser is out of storage space. The field report was not saved.'); return false; }
+  }
+
+  function openEvidenceDatabase() {
+    return new Promise((resolve, reject) => {
+      if (!('indexedDB' in window)) { reject(new Error('Photo storage is unavailable in this browser.')); return; }
+      const request = indexedDB.open(evidenceDatabaseName, 1);
+      request.onupgradeneeded = () => {
+        const db = request.result;
+        if (!db.objectStoreNames.contains('photos')) db.createObjectStore('photos', {keyPath: 'id'});
+      };
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error || new Error('Could not open photo storage.'));
+    });
+  }
+
+  async function putPhoto(photo) {
+    const db = await openEvidenceDatabase();
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction('photos', 'readwrite');
+      transaction.objectStore('photos').put(photo);
+      transaction.oncomplete = () => { db.close(); resolve(); };
+      transaction.onerror = () => { db.close(); reject(transaction.error || new Error('Could not save a photo.')); };
+      transaction.onabort = () => { db.close(); reject(transaction.error || new Error('Photo save was cancelled.')); };
+    });
+  }
+
+  async function getPhoto(id) {
+    const db = await openEvidenceDatabase();
+    return new Promise((resolve, reject) => {
+      const request = db.transaction('photos', 'readonly').objectStore('photos').get(id);
+      request.onsuccess = () => { db.close(); resolve(request.result?.blob || null); };
+      request.onerror = () => { db.close(); reject(request.error || new Error('Could not load a photo.')); };
+    });
+  }
+
+  async function optimizePhoto(file) {
+    if (!file.type.startsWith('image/')) throw new Error('Choose an image file.');
+    if (file.size > 20 * 1024 * 1024) throw new Error('Each image must be smaller than 20 MB.');
+    const bitmap = await createImageBitmap(file);
+    const longest = Math.max(bitmap.width, bitmap.height);
+    const ratio = Math.min(1, 1500 / longest);
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.max(1, Math.round(bitmap.width * ratio));
+    canvas.height = Math.max(1, Math.round(bitmap.height * ratio));
+    canvas.getContext('2d').drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+    bitmap.close();
+    const blob = await new Promise((resolve, reject) => canvas.toBlob(value => value ? resolve(value) : reject(new Error('Could not prepare this image.')), 'image/jpeg', 0.82));
+    return {blob, name: file.name.slice(0, 100), type: 'image/jpeg'};
+  }
+
+  function releasePhotoPreviews() {
+    previewUrls.forEach(url => URL.revokeObjectURL(url));
+    previewUrls = [];
+  }
+
+  async function renderPhotoPreview() {
+    const root = $('photoPreview');
+    releasePhotoPreviews();
+    root.replaceChildren();
+    const files = [...$('reportPhotos').files].slice(0, 3);
+    if (!files.length) return;
+    if ($('reportPhotos').files.length > 3) showToast('Choose up to three photos.');
+    files.forEach(file => {
+      const image = document.createElement('img');
+      image.alt = `Preview of ${file.name}`;
+      image.src = URL.createObjectURL(file);
+      previewUrls.push(image.src);
+      root.append(image);
+    });
+  }
+
+  async function loadRecords() {
+    if (!recordsByLocationPromise) {
+      recordsByLocationPromise = fetch(recordsUrl).then(async response => {
+        if (!response.ok) throw new Error('Case history is not available right now.');
+        if (typeof DecompressionStream === 'undefined') throw new Error('This browser cannot open the compressed case history.');
+        const stream = response.body.pipeThrough(new DecompressionStream('gzip'));
+        return new Response(stream).json();
+      });
+    }
+    return recordsByLocationPromise;
+  }
+
+  function isFollowUp(record) {
+    return record.kind === 'Incident' ? record.status === 'Open' : ['Open', 'Assigned', 'In progress'].includes(record.status);
+  }
+
+  function renderRecordSummary(records) {
+    const openIncidents = records.filter(record => record.kind === 'Incident' && isFollowUp(record)).length;
+    const resolvedIncidents = records.filter(record => record.kind === 'Incident' && record.status === 'Resolved').length;
+    const activeComplaints = records.filter(record => record.kind === 'Complaint' && isFollowUp(record)).length;
+    const closedComplaints = records.filter(record => record.kind === 'Complaint' && !isFollowUp(record)).length;
+    $('recordSummary').innerHTML = `<div class="record-stat"><strong>${fmt.format(openIncidents)}</strong><span>open incidents</span></div><div class="record-stat"><strong>${fmt.format(resolvedIncidents)}</strong><span>resolved</span></div><div class="record-stat"><strong>${fmt.format(activeComplaints)}</strong><span>active complaints</span></div><div class="record-stat"><strong>${fmt.format(closedComplaints)}</strong><span>closed / resolved</span></div>`;
+    $('sourceRecordsSummary').textContent = `View ${fmt.format(records.length)} source records`;
+  }
+
+  function renderSourceRecordList(records) {
+    const filter = $('recordsFilter').value;
+    const filtered = records.filter(record => filter === 'all'
+      || (filter === 'followup' && isFollowUp(record))
+      || (filter === 'incident' && record.kind === 'Incident')
+      || (filter === 'complaint' && record.kind === 'Complaint'));
+    const list = $('sourceRecordList');
+    list.replaceChildren();
+    filtered.slice(0, 12).forEach(record => {
+      const item = document.createElement('article');
+      item.className = 'source-record';
+      const head = document.createElement('div'); head.className = 'source-record-head';
+      const title = document.createElement('strong'); title.textContent = record.type || record.kind;
+      const status = document.createElement('span'); status.className = `record-status ${isFollowUp(record) ? 'is-open' : 'is-closed'}`; status.textContent = record.status;
+      const meta = document.createElement('p');
+      const date = record.date ? new Date(record.date.replace(' ', 'T')).toLocaleDateString(undefined, {month: 'short', day: 'numeric', year: 'numeric'}) : 'Date unavailable';
+      meta.textContent = `${record.kind} · ${date} · ${record.severity || 'Severity not supplied'}${record.injuries ? ` · ${record.injuries} injuries` : ''}`;
+      head.append(title, status); item.append(head, meta); list.append(item);
+    });
+    if (!filtered.length) {
+      const empty = document.createElement('p'); empty.className = 'record-empty'; empty.textContent = 'No records match this filter.'; list.append(empty);
+    } else if (filtered.length > 12) {
+      const more = document.createElement('p'); more.className = 'record-empty'; more.textContent = `Showing 12 of ${fmt.format(filtered.length)} records. Use the filters to narrow the list.`; list.append(more);
+    }
+  }
+
+  async function renderRecordHistory(loc) {
+    const summary = $('recordSummary');
+    if (!loc) { summary.textContent = 'Choose a problem to view report status.'; $('sourceRecordList').replaceChildren(); return; }
+    summary.textContent = 'Loading case history…';
+    try {
+      const recordsByLocation = await loadRecords();
+      if (state.selected !== loc.id) return;
+      const records = recordsByLocation[loc.id] || [];
+      renderRecordSummary(records);
+      renderSourceRecordList(records);
+    } catch (error) {
+      if (state.selected !== loc.id) return;
+      summary.textContent = error.message || 'Case history could not be loaded.';
+      $('sourceRecordsSummary').textContent = 'Case history unavailable';
+      $('sourceRecordList').replaceChildren();
+    }
+  }
+
+  async function renderFieldReports(loc) {
+    const root = $('fieldReportList');
+    const reports = loc ? getFieldReports().filter(report => report.locationId === loc.id).sort((a, b) => b.createdAt.localeCompare(a.createdAt)) : [];
+    $('fieldReportCount').textContent = `${reports.length} ${reports.length === 1 ? 'report' : 'reports'}`;
+    root.replaceChildren();
+    if (!loc) return;
+    if (!reports.length) {
+      const empty = document.createElement('p'); empty.className = 'field-report-empty'; empty.textContent = 'No field photos yet. Add a report after a real-world check.'; root.append(empty); return;
+    }
+    reports.forEach(report => {
+      const card = document.createElement('article'); card.className = 'field-report-card'; card.dataset.reportId = report.id;
+      const heading = document.createElement('div'); heading.className = 'field-report-card-head';
+      const title = document.createElement('div');
+      const problem = document.createElement('strong'); problem.textContent = report.type || 'Field report';
+      const when = document.createElement('small'); when.textContent = new Date(report.createdAt).toLocaleString(undefined, {dateStyle: 'medium', timeStyle: 'short'});
+      title.append(problem, when);
+      const status = document.createElement('select'); status.className = 'report-status-select'; status.setAttribute('aria-label', `Update status for ${report.type || 'field report'}`);
+      ['Open', 'Assigned', 'In progress', 'Fixed', 'Verified'].forEach(value => status.add(new Option(value, value)));
+      status.value = report.status;
+      status.addEventListener('change', () => {
+        const all = getFieldReports(); const entry = all.find(item => item.id === report.id);
+        if (!entry) return;
+        entry.status = status.value; entry.updatedAt = new Date().toISOString();
+        if (!saveFieldReports(all)) return;
+        report.status = status.value;
+        showToast(`Field report updated to ${status.value}.`);
+      });
+      heading.append(title, status); card.append(heading);
+      const address = document.createElement('p'); address.className = 'field-report-address'; address.textContent = report.address || 'Location not supplied'; card.append(address);
+      const note = document.createElement('p'); note.className = 'field-report-note'; note.textContent = report.note || ''; card.append(note);
+      if (Number.isFinite(report.lat) && Number.isFinite(report.lon)) {
+        const gps = document.createElement('small'); gps.className = 'field-report-gps'; gps.textContent = `GPS ${report.lat.toFixed(5)}, ${report.lon.toFixed(5)}`; card.append(gps);
+      }
+      if (report.photoIds?.length) {
+        const images = document.createElement('div'); images.className = 'field-report-images'; card.append(images);
+        report.photoIds.forEach(async (id, index) => {
+          try {
+            const blob = await getPhoto(id);
+            if (!blob || !card.isConnected) return;
+            const image = document.createElement('img'); image.alt = `Field evidence photo ${index + 1} for ${report.type || 'problem'}`; image.loading = 'lazy';
+            const url = URL.createObjectURL(blob); image.src = url; image.addEventListener('load', () => URL.revokeObjectURL(url), {once: true});
+            images.append(image);
+          } catch (_) { /* The report still displays if browser photo storage is unavailable. */ }
+        });
+      }
+      root.append(card);
+    });
+  }
+
+  function resetFieldReportForm() {
+    $('fieldReportForm').reset();
+    $('reportType').value = data.incidentTypes[0] || '';
+    releasePhotoPreviews();
+    $('photoPreview').replaceChildren();
+    $('fieldReportDetails').open = false;
+  }
+
+  async function saveFieldReport(event) {
+    event.preventDefault();
+    const loc = locations.find(item => item.id === state.selected);
+    if (!loc) { showToast('Select a location before adding field evidence.'); return; }
+    const latValue = $('reportLat').value.trim(), lonValue = $('reportLon').value.trim();
+    if (Boolean(latValue) !== Boolean(lonValue)) { showToast('Enter both GPS coordinates, or leave both blank.'); return; }
+    const files = [...$('reportPhotos').files].slice(0, 3);
+    const reportId = crypto.randomUUID ? crypto.randomUUID() : `report-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+    const photoIds = [];
+    try {
+      for (const [index, file] of files.entries()) {
+        const prepared = await optimizePhoto(file);
+        const photoId = `${reportId}-photo-${index + 1}`;
+        await putPhoto({id: photoId, blob: prepared.blob, name: prepared.name, type: prepared.type});
+        photoIds.push(photoId);
+      }
+    } catch (error) {
+      showToast(error.message || 'Could not save the attached photos.');
+      return;
+    }
+    const report = {
+      id: reportId, locationId: loc.id, type: $('reportType').value,
+      severity: $('reportSeverity').value, status: $('reportStatus').value,
+      address: $('reportAddress').value.trim(), lat: latValue ? Number(latValue) : null,
+      lon: lonValue ? Number(lonValue) : null, note: $('reportNote').value.trim(),
+      photoIds, createdAt: new Date().toISOString(),
+    };
+    const all = getFieldReports(); all.push(report);
+    if (!saveFieldReports(all)) return;
+    resetFieldReportForm();
+    renderMap(loc);
+    await renderFieldReports(loc);
+    showToast(`Field evidence saved for ${loc.id}.`);
   }
 
   function renderDetails(loc) {
@@ -309,8 +569,15 @@
       $('decisionSavedState').textContent = 'No decision';
       $('decisionSavedState').className = 'decision-state';
       $('saveDecision').disabled = true;
+      $('fieldReportForm').dataset.locationId = '';
+      $('fieldReportForm').querySelector('button[type="submit"]').disabled = true;
+      renderRecordHistory(null);
+      renderFieldReports(null);
       return;
     }
+    if ($('fieldReportForm').dataset.locationId !== loc.id) resetFieldReportForm();
+    $('fieldReportForm').dataset.locationId = loc.id;
+    $('fieldReportForm').querySelector('button[type="submit"]').disabled = false;
     $('saveDecision').disabled = false;
     const cls = scoreClass(loc.priority);
     $('detailId').textContent = loc.id;
@@ -333,6 +600,8 @@
     $('decisionNote').value = decision?.note || '';
     $('decisionSavedState').textContent = decision ? `Saved ${new Intl.DateTimeFormat('en', {month: 'short', day: 'numeric'}).format(new Date(decision.savedAt))}` : 'No decision';
     $('decisionSavedState').className = `decision-state${decision ? ' is-saved' : ''}`;
+    renderRecordHistory(loc);
+    renderFieldReports(loc);
   }
 
   function render() {
@@ -340,7 +609,7 @@
     const selected = rows.find(x => x.id === state.selected) || rows[0] || null;
     state.selected = selected?.id || null;
     renderMetrics(rows);
-    renderMap(rows);
+    renderMap(selected);
     const leaders = renderZones(rows);
     renderBriefing(rows, leaders);
     renderTrend(rows);
@@ -359,8 +628,8 @@
 
   function exportQueue() {
     const rows = currentRows();
-    const headers = ['location_id', 'zone', 'priority_index', 'incidents_in_scope', 'all_incidents', 'high_or_critical_incidents', 'complaints', 'open_work_items', 'road_condition', 'pedestrian_activity', 'near_school', 'near_hospital', 'top_incident_type', 'review_action', 'review_note', 'review_saved_at'];
-    const lines = [headers.join(','), ...rows.map(loc => { const decision = reviewDecisions[loc.id] || {}; return [loc.id, loc.zone, loc.priority, state.issue === 'all' ? loc.incidentCount : (loc.incidentTypes[state.issue] || 0), loc.incidentCount, loc.highCritical, loc.complaintCount, loc.openWork, loc.condition, loc.pedestrian, loc.school, loc.hospital, loc.topIssue, decision.action, decision.note, decision.savedAt].map(quoteCsv).join(','); })];
+    const headers = ['location_id', 'zone', 'priority_index', 'ml_q4_incident_forecast', 'incidents_in_scope', 'all_incidents', 'high_or_critical_incidents', 'complaints', 'open_work_items', 'road_condition', 'pedestrian_activity', 'near_school', 'near_hospital', 'top_incident_type', 'review_action', 'review_note', 'review_saved_at'];
+    const lines = [headers.join(','), ...rows.map(loc => { const decision = reviewDecisions[loc.id] || {}; return [loc.id, loc.zone, loc.priority, loc.predictedQ4?.toFixed(2), state.issue === 'all' ? loc.incidentCount : (loc.incidentTypes[state.issue] || 0), loc.incidentCount, loc.highCritical, loc.complaintCount, loc.openWork, loc.condition, loc.pedestrian, loc.school, loc.hospital, loc.topIssue, decision.action, decision.note, decision.savedAt].map(quoteCsv).join(','); })];
     const blob = new Blob([lines.join('\r\n')], {type: 'text/csv;charset=utf-8'});
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
@@ -425,6 +694,27 @@
   $('exportTop').addEventListener('click', exportQueue);
   $('exportActions').addEventListener('click', exportReviewLog);
   $('saveDecision').addEventListener('click', saveDecision);
+  $('recordsFilter').addEventListener('change', async () => {
+    const loc = locations.find(item => item.id === state.selected);
+    if (!loc) return;
+    try { renderSourceRecordList((await loadRecords())[loc.id] || []); }
+    catch (_) { /* The status panel already reports any load failure. */ }
+  });
+  $('reportPhotos').addEventListener('change', renderPhotoPreview);
+  $('useCurrentLocation').addEventListener('click', () => {
+    if (!navigator.geolocation) { showToast('Location access is unavailable in this browser.'); return; }
+    $('useCurrentLocation').disabled = true;
+    navigator.geolocation.getCurrentPosition(position => {
+      $('reportLat').value = position.coords.latitude.toFixed(6);
+      $('reportLon').value = position.coords.longitude.toFixed(6);
+      $('useCurrentLocation').disabled = false;
+      showToast('GPS coordinates added.');
+    }, error => {
+      $('useCurrentLocation').disabled = false;
+      showToast(error.code === error.PERMISSION_DENIED ? 'Allow location access to add GPS coordinates.' : 'Could not read your current location.');
+    }, {enableHighAccuracy: true, timeout: 12000, maximumAge: 0});
+  });
+  $('fieldReportForm').addEventListener('submit', saveFieldReport);
   const closeLocationDetails = () => { state.mobileDetailOpen = false; render(); };
   $('detailClose').addEventListener('click', closeLocationDetails);
   $('detailScrim').addEventListener('click', closeLocationDetails);
@@ -443,5 +733,6 @@
     item.classList.add('active');
   }));
   render();
+  loadForecastModel();
 })();
 
