@@ -7,61 +7,61 @@
     <meta name="description" content="Report and track local civic issues with Mana Nagaram." />
     <title>Mana Nagaram | Citizen portal</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <link rel="stylesheet" href="citizen.css?v=citizen-layout-v4" />
+    <link rel="stylesheet" href="citizen.css?v=light-clean-v5" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
     <script src="citizen.js?v=citizen-layout-v4" defer></script>
   </head>
-  <body class="citizen-body" data-required-role="citizen">
+  <body class="citizen-body">
     <header class="citizen-header">
-      <a class="brand citizen-brand" href="#home" aria-label="Mana Nagaram home"><span class="brand-mark" aria-hidden="true">⌁</span><span><strong>Mana Nagaram</strong><small>Make your neighborhood heard</small></span></a>
-      <nav class="citizen-nav" aria-label="Citizen navigation"><a href="#reportIssue">Report an issue</a><a href="#track">Track a report</a><a href="#myReports">My complaints <span id="myReportCount">0</span></a></nav>
-      <a class="button button-outline" id="accountLink" href="auth.html">Sign in</a><a class="button button-outline role-switch" href="index.html">Staff workspace ↗</a>
+      <a class="brand citizen-brand" href="#home" aria-label="Mana Nagaram home"><span class="brand-mark" aria-hidden="true">⌁</span><span><strong>Mana Nagaram</strong><small>Citizen portal</small></span></a>
+      <nav class="citizen-nav" aria-label="Citizen navigation"><a href="#reportIssue">Report</a><a href="#track">Track</a><a href="#myReports">My reports <span id="myReportCount">0</span></a></nav>
+      <a class="button button-outline role-switch" href="index.html">Staff ↗</a>
     </header>
 
     <main class="citizen-main" id="home">
       <section class="citizen-quick-action" aria-label="Quick actions">
-        <div class="quick-action-copy"><span class="quick-action-mark">↗</span><div><strong>What would you like to do?</strong><small>Ask for a report, status, or history and we’ll take you there.</small></div></div>
+        <div class="quick-action-copy"><span class="quick-action-mark">↗</span><div><strong>Quick action</strong></div></div>
         <form class="quick-action-form" id="citizenCommandForm"><label class="sr-only" for="citizenCommand">What would you like to do?</label><input id="citizenCommand" type="text" maxlength="180" placeholder="Report a pothole near Central Market" /><button class="button button-primary" type="submit">Go <span>→</span></button></form>
-        <p class="quick-action-result" id="citizenCommandResult" aria-live="polite">Try a request in your own words. You’ll review a report before saving it.</p>
+        <p class="quick-action-result" id="citizenCommandResult" aria-live="polite"></p>
         <button id="enableNotifications" class="notification-toggle" type="button">Enable reminders</button>
       </section>
 
       <section class="citizen-hero">
-        <div class="citizen-hero-copy"><p class="eyebrow">A CLEARER WAY TO FIX WHAT MATTERS</p><h1>Your street. Your report. A city that can respond.</h1><p>Tell the city about a pothole, blocked drain, broken light, or other local issue. Follow the status of reports saved in this browser.</p><a class="button button-primary" href="#reportIssue">Report a problem <span>↓</span></a><div class="citizen-promise"><span class="promise-icon">✓</span><span>No account needed</span><i></i><span>Your report stays in this browser</span></div></div>
-        <div class="hero-illustration" aria-hidden="true"><div class="hero-map-grid"><span class="hero-road hero-road-a"></span><span class="hero-road hero-road-b"></span><span class="hero-road hero-road-c"></span><span class="hero-block block-a"></span><span class="hero-block block-b"></span><span class="hero-block block-c"></span><span class="hero-block block-d"></span><span class="hero-pin"><b>!</b></span><span class="hero-pin-small"></span></div><div class="hero-float-card"><span class="hero-float-icon">✓</span><span><strong>Every report counts</strong><small>Help your neighborhood get noticed</small></span></div></div>
+        <div class="citizen-hero-copy"><p class="eyebrow">CITIZEN PORTAL</p><h1>Your street. Your report. A city that can respond.</h1><p>Report a pothole, blocked drain, broken light, or other local issue.</p><a class="button button-primary" href="#reportIssue">Report a problem <span>↓</span></a><div class="citizen-promise"><span class="promise-icon">✓</span><span>No account needed</span></div></div>
+        <div class="hero-illustration" aria-hidden="true"><div class="hero-map-grid"><span class="hero-road hero-road-a"></span><span class="hero-road hero-road-b"></span><span class="hero-road hero-road-c"></span><span class="hero-block block-a"></span><span class="hero-block block-b"></span><span class="hero-block block-c"></span><span class="hero-block block-d"></span><span class="hero-pin"><b>!</b></span><span class="hero-pin-small"></span></div><div class="hero-float-card"><span class="hero-float-icon">✓</span><span><strong>Every report counts</strong></span></div></div>
       </section>
 
-      <section class="citizen-how" aria-label="How it works"><article><span>01</span><div><strong>Tell us what you see</strong><small>Choose an issue and describe the spot.</small></div></article><article><span>02</span><div><strong>Pin the location</strong><small>Place a marker on the map for clarity.</small></div></article><article><span>03</span><div><strong>Follow the update</strong><small>Use your report code to check its status.</small></div></article></section>
+      <section class="citizen-how" aria-label="How it works"><article><span>01</span><div><strong>Report</strong></div></article><article><span>02</span><div><strong>Pin</strong></div></article><article><span>03</span><div><strong>Track</strong></div></article></section>
 
       <section class="citizen-section" id="reportIssue">
-        <div class="citizen-section-heading"><div><p class="eyebrow">CITIZEN REPORT</p><h2>Report a local issue</h2><p>Share the details that help a city team understand what needs attention.</p></div><div class="privacy-chip"><span>▣</span>Private details not required</div></div>
+        <div class="citizen-section-heading"><div><p class="eyebrow">REPORT</p><h2>Report an issue</h2></div><div class="privacy-chip"><span>▣</span>No personal details needed</div></div>
         <div class="citizen-report-layout">
           <form class="citizen-form citizen-card" id="citizenReportForm">
-            <div class="form-row"><label class="form-field"><span>ISSUE TYPE</span><select name="category" required><option value="">Choose an issue</option><option>Pothole</option><option>Blocked drain</option><option>Flooding</option><option>Streetlight outage</option><option>Signal failure</option><option>Collision hazard</option><option>Waste or sanitation</option><option>Other</option></select></label><label class="form-field"><span>SHORT TITLE</span><input name="title" maxlength="70" required placeholder="e.g. Deep pothole near the crossing" /></label></div>
-            <label class="form-field"><span>STREET OR NEARBY LANDMARK</span><input name="place" maxlength="120" required placeholder="Street name, intersection, or public landmark" /></label>
-            <label class="form-field"><span>WHAT DID YOU NOTICE?</span><textarea name="description" maxlength="500" minlength="15" required placeholder="Describe the issue and any immediate safety concern. Avoid names or private details."></textarea><small class="field-hint">15–500 characters · No names or contact details needed.</small></label>
-            <div class="form-field map-pick-field"><span>PIN THE LOCATION <small>OPTIONAL, RECOMMENDED</small></span><div class="report-map-wrap"><div id="reportMap" class="leaflet-map" aria-label="Click the map to place a report pin"></div><div class="map-error" id="reportMapError" hidden>Map tiles are unavailable. You can still submit the street or landmark above.</div></div><div class="map-pick-footer"><span id="reportMapStatus">Click the map to place a pin. Device location is not requested.</span><button class="text-button" type="button" id="clearReportPin" hidden>Clear pin</button></div><input type="hidden" name="latitude" /><input type="hidden" name="longitude" /></div>
-            <label class="form-field"><span>PHOTO <small>OPTIONAL · MAX 1 MB</small></span><input class="photo-input" name="photo" type="file" accept="image/*" /></label>
-            <div class="citizen-form-bottom"><p>By submitting, this report is saved in this browser only. It is not sent to a city office.</p><button class="button button-primary" type="submit">Save report <span>→</span></button></div>
+            <div class="form-row"><label class="form-field"><span>ISSUE TYPE</span><select name="category" required><option value="">Choose an issue</option><option>Pothole</option><option>Blocked drain</option><option>Flooding</option><option>Streetlight outage</option><option>Signal failure</option><option>Collision hazard</option><option>Waste or sanitation</option><option>Other</option></select></label><label class="form-field"><span>TITLE</span><input name="title" maxlength="70" required placeholder="e.g. Deep pothole by crossing" /></label></div>
+            <label class="form-field"><span>LOCATION</span><input name="place" maxlength="120" required placeholder="Street or landmark" /></label>
+            <label class="form-field"><span>DESCRIPTION</span><textarea name="description" maxlength="500" minlength="15" required placeholder="What happened? Note any safety concern."></textarea><small class="field-hint">15–500 characters</small></label>
+            <div class="form-field map-pick-field"><span>MAP PIN <small>OPTIONAL</small></span><div class="report-map-wrap"><div id="reportMap" class="leaflet-map" aria-label="Click the map to place a report pin"></div><div class="map-error" id="reportMapError" hidden>Map unavailable. Use the street or landmark above.</div></div><div class="map-pick-footer"><span id="reportMapStatus">Tap the map to place a pin. Device location isn’t used.</span><button class="text-button" type="button" id="clearReportPin" hidden>Clear</button></div><input type="hidden" name="latitude" /><input type="hidden" name="longitude" /></div>
+            <label class="form-field"><span>PHOTO <small>OPTIONAL · 1 MB MAX</small></span><input class="photo-input" name="photo" type="file" accept="image/*" /></label>
+            <div class="citizen-form-bottom"><p>Demo only · Saved on this device</p><button class="button button-primary" type="submit">Save report <span>→</span></button></div>
             <div class="citizen-notice" id="submissionNotice" role="status" aria-live="polite" hidden></div>
           </form>
-          <aside class="citizen-side-note"><div class="citizen-side-icon">✳</div><p class="eyebrow">A GOOD REPORT HELPS</p><h3>Details make a difference.</h3><p>Choose the closest issue type, add a clear location, and describe what is happening. A map pin helps staff understand the spot.</p><div class="safety-list"><span><i>✓</i>Use a nearby public landmark</span><span><i>✓</i>Include what makes it unsafe</span><span><i>✓</i>Add a photo only if it helps</span></div><div class="honesty-note"><strong>Prototype notice</strong><p>Reports are stored on this device. A city team will not receive them until a production service is connected.</p></div></aside>
+          <aside class="citizen-side-note"><p class="eyebrow">TIPS</p><h3>Help us locate it.</h3><div class="safety-list"><span><i>✓</i>Use a nearby landmark</span><span><i>✓</i>Note any safety risk</span><span><i>✓</i>Add a photo if useful</span></div></aside>
         </div>
       </section>
 
       <section class="citizen-section track-section" id="track">
-        <div class="citizen-section-heading"><div><p class="eyebrow">REPORT STATUS</p><h2>Track a report</h2><p>Enter the code shown when you saved a report on this browser.</p></div></div>
-        <div class="track-card citizen-card"><form id="trackForm" class="track-form"><label class="form-field"><span>REPORT CODE</span><input name="reportCode" required placeholder="e.g. CF-2026-AB12CD" autocomplete="off" /></label><button class="button button-dark" type="submit">Check status</button></form><div class="track-result" id="trackResult" aria-live="polite"></div></div>
+        <div class="citizen-section-heading"><div><p class="eyebrow">STATUS</p><h2>Track a report</h2><p>Enter your report code.</p></div></div>
+        <div class="track-card citizen-card"><form id="trackForm" class="track-form"><label class="form-field"><span>CODE</span><input name="reportCode" required placeholder="e.g. CF-2026-AB12CD" autocomplete="off" /></label><button class="button button-dark" type="submit">Check status</button></form><div class="track-result" id="trackResult" aria-live="polite"></div></div>
       </section>
 
       <section class="citizen-section my-reports-section" id="myReports">
-        <div class="citizen-section-heading"><div><p class="eyebrow">YOUR SUBMISSION HISTORY</p><h2>My complaints</h2><p>See every complaint saved from this browser, its latest update, and progress to resolution.</p></div><span class="reports-count" id="reportsSummary">0 complaints</span></div>
-        <div class="my-complaints-toolbar"><label class="filter-field"><span>FIND A COMPLAINT</span><input id="myReportSearch" type="search" placeholder="Report code, issue, or location" /></label><label class="sort-control"><span>Show</span><select id="myReportFilter"><option value="all">All complaints</option><option value="open">In progress</option><option>Resolved</option><option>Not actionable</option></select></label></div>
+        <div class="citizen-section-heading"><div><p class="eyebrow">HISTORY</p><h2>My reports</h2></div><span class="reports-count" id="reportsSummary">0 reports</span></div>
+        <div class="my-complaints-toolbar"><label class="filter-field"><span>SEARCH</span><input id="myReportSearch" type="search" placeholder="Code, issue, or location" /></label><label class="sort-control"><span>Status</span><select id="myReportFilter"><option value="all">All reports</option><option value="open">In progress</option><option>Resolved</option><option>Not actionable</option></select></label></div>
         <div class="citizen-report-list" id="citizenReportList"></div>
       </section>
     </main>
 
-    <footer class="citizen-footer"><a class="brand citizen-brand" href="#home"><span class="brand-mark" aria-hidden="true">⌁</span><span><strong>Mana Nagaram</strong><small>Make your neighborhood heard</small></span></a><p>Mana Nagaram demo · Synthetic operations data · Reports stay in this browser.</p><a href="index.html">Staff workspace ↗</a></footer>
+    <footer class="citizen-footer"><a class="brand citizen-brand" href="#home"><span class="brand-mark" aria-hidden="true">⌁</span><span><strong>Mana Nagaram</strong><small>City reports</small></span></a><p>Demo · Reports stay on this device</p><a href="index.html">Staff ↗</a></footer>
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script src="supabase-config.js"></script><script type="module" src="auth.js"></script>`n  </body>
+  </body>
 </html>

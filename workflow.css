@@ -161,5 +161,13 @@ body{font-size:16px}.brand strong{font-size:17px}.brand small{font-size:12px}.si
 .field-report-form .photo-preview{display:flex;flex-wrap:wrap;gap:8px}.field-report-form .photo-preview img{width:68px;height:60px;border-radius:7px;object-fit:cover}
 @media(max-width:920px){.decision-evidence-grid{grid-template-columns:minmax(0,1fr);align-items:stretch}.field-report-details{margin-top:0}}
 
+/* Neutral light surfaces for staff workflows */
+.staff-command,.inbox-toolbar,.inbox-metric,.admin-report-card,.admin-report-summary,.decision-evidence-grid>.detail-disclosure{background:#fff;border-color:#e1e7ed}
+.decision-panel .decision-heading,.field-report-form,.field-report-empty,.field-report-form .decision-foot{background:#f6f8fa;border-color:#e5ebf0}
+.decision-section-heading,.field-report-details{border-color:#e5ebf0;color:#33495c}
+.field-report-form select,.field-report-form input:not([type=file]),.field-report-form textarea{border-color:#dfe6ed}
+.staff-command-shortcuts button{border-color:#dfe6ed;background:#fff}
+.staff-command>p:empty{display:none;min-height:0}
+
 .auth-card{color:var(--ink)}.auth-card h2{font-size:20px}.topbar-right #accountLink{white-space:nowrap}
 @media(max-width:600px){.topbar-right #accountLink{display:none}.citizen-header #accountLink{min-height:34px;font-size:11px;padding:0 9px}}

@@ -1,4 +1,24 @@
 <!doctype html>
-<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#f6f3ed"><title>Sign in | Mana Nagaram</title><link rel="stylesheet" href="citizen.css?v=citizen-layout-v4"><style>
-body{min-height:100vh;display:grid;place-items:center;padding:24px}.auth-card{width:min(100%,520px);padding:30px;border:1px solid #e7e0d8;border-radius:20px;background:#fffdfa;box-shadow:0 16px 45px #202d3b12}.auth-card h1{font-size:30px;margin:10px 0}.auth-card>p{color:#687583;font-size:15px}.auth-form{display:grid;gap:12px;margin:20px 0}.auth-form label{display:grid;gap:6px;color:#536373;font-size:13px;font-weight:700}.auth-form input{min-height:46px;padding:10px 12px;border:1px solid #e5ded7;border-radius:9px;font-size:15px}.auth-separator{margin:22px 0;border:0;border-top:1px solid #eee8e1}.auth-status{padding:12px;border-radius:10px;background:#f7f1e8;color:#71543f;font-size:13px;line-height:1.5}.auth-links{display:flex;justify-content:space-between;gap:12px;font-size:13px;color:#79503d}.auth-role-note{font-size:12px!important}
-</style><script src="supabase-config.js"></script><script type="module" src="auth.js"></script></head><body data-auth-page="true"><main class="auth-card"><a class="brand citizen-brand" href="citizen.html"><span class="brand-mark" aria-hidden="true">⌁</span><span><strong>Mana Nagaram</strong><small>Secure portal access</small></span></a><p class="eyebrow">ACCOUNT ACCESS</p><h1>Sign in to continue</h1><p>Use your assigned account to open the citizen or staff workspace.</p><form id="signInForm" class="auth-form"><label>Email<input id="email" type="email" autocomplete="username" required></label><label>Password<input id="password" type="password" autocomplete="current-password" minlength="8" required></label><button class="button button-primary" type="submit">Sign in</button></form><p class="auth-role-note">Citizen accounts can be created below. Staff accounts must be assigned by a project administrator.</p><hr class="auth-separator"><h2>Create citizen account</h2><form id="signUpForm" class="auth-form"><label>Email<input id="newEmail" type="email" autocomplete="email" required></label><label>Password<input id="newPassword" type="password" autocomplete="new-password" minlength="8" required></label><button class="button button-outline" type="submit">Sign up as a citizen</button></form><div id="authStatus" class="auth-status" role="status" aria-live="polite">Checking account service…</div><div class="auth-links"><a href="citizen.html">Citizen preview</a><a href="index.html">Staff preview</a></div></main></body></html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f4f7fa">
+  <title>Accounts paused | Mana Nagaram</title>
+  <link rel="stylesheet" href="citizen.css?v=citizen-layout-v5">
+  <style>
+    body{min-height:100vh;display:grid;place-items:center;padding:24px}.auth-card{width:min(100%,520px);padding:30px;border:1px solid #e0e6ec;border-radius:18px;background:#fff;box-shadow:0 12px 34px #172b3810}.auth-card h1{margin:12px 0;font-size:28px}.auth-card p{color:#667787}.auth-links{display:flex;gap:12px;flex-wrap:wrap;margin-top:22px}
+  </style>
+</head>
+<body>
+  <main class="auth-card">
+    <a class="brand citizen-brand" href="citizen.html"><span class="brand-mark" aria-hidden="true">⌁</span><span><strong>Mana Nagaram</strong><small>City reports</small></span></a>
+    <h1>Accounts are paused</h1>
+    <p>Continue straight to the demo portal. Account setup is saved for a later update.</p>
+    <nav class="auth-links" aria-label="Choose a portal">
+      <a class="button button-primary" href="citizen.html">Citizen portal</a>
+      <a class="button button-outline" href="index.html">Staff workspace</a>
+    </nav>
+  </main>
+</body>
+</html>

@@ -304,7 +304,7 @@
   }
 
   function renderQueue(rows) {
-    const displayRows = state.expanded ? rows : rows.slice(0, 8);
+    const displayRows = state.expanded ? rows : rows.slice(0, 10);
     const queueRows = $('queueRows');
     if (!rows.length) {
       queueRows.innerHTML = '<div class="empty-state">No locations match these filters. Try resetting the search or selecting another zone.</div>';
@@ -321,7 +321,7 @@
       queueRows.querySelectorAll('.location-row').forEach((button) => button.addEventListener('click', () => selectLocation(button.dataset.id)));
     }
     $('tableShowing').textContent = rows.length ? `Showing ${fmt.format(displayRows.length)} of ${fmt.format(rows.length)} locations` : 'Showing 0 locations';
-    $('showMore').style.display = rows.length > 8 ? 'inline-block' : 'none';
+    $('showMore').style.display = rows.length > 10 ? 'inline-block' : 'none';
     $('showMore').innerHTML = state.expanded ? 'Show fewer <span>↑</span>' : 'Show more <span>↓</span>';
   }
 
