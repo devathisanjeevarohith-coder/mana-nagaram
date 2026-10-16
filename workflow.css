@@ -171,3 +171,24 @@ body{font-size:16px}.brand strong{font-size:17px}.brand small{font-size:12px}.si
 
 .auth-card{color:var(--ink)}.auth-card h2{font-size:20px}.topbar-right #accountLink{white-space:nowrap}
 @media(max-width:600px){.topbar-right #accountLink{display:none}.citizen-header #accountLink{min-height:34px;font-size:11px;padding:0 9px}}
+
+/* Conversational quick task composer */
+.staff-command{display:grid;grid-template-columns:minmax(0,1fr);gap:12px;margin:0 0 22px;padding:18px 20px;background:#fff;border:1px solid #e1e7ed;border-radius:16px;box-shadow:0 8px 24px rgba(33,48,62,.045)}
+.staff-command-heading{display:flex!important;grid-template-columns:none!important;align-items:center;gap:11px!important}
+.staff-command-icon{display:grid;place-items:center;flex:0 0 38px;width:38px;height:38px;border-radius:12px;background:#eef4f6;color:#316573;font-size:19px;font-weight:700}
+.staff-command-copy{gap:2px!important}
+.staff-command-copy strong{color:#25384a;font-size:16px!important;line-height:1.25}
+.staff-command-copy small{color:#718091;font-size:12px;line-height:1.4}
+.staff-command form{display:flex;gap:8px;width:100%;margin:0}
+.staff-command input{height:48px;padding:0 15px;border-color:#dfe6ed;border-radius:11px;background:#f9fbfc;font-size:14px}
+.staff-command input::placeholder{color:#8794a2;opacity:1}
+.staff-command form .button{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-width:82px;min-height:48px;padding:0 17px;border-radius:11px;font-size:13px}
+.staff-command-shortcuts{display:flex;align-items:center;flex-wrap:wrap;gap:8px}
+.staff-command-shortcuts>span{margin-right:2px;color:#83909d;font-size:11px;font-weight:650}
+.staff-command-shortcuts button{min-height:32px;padding:0 12px;border:1px solid #e1e7ed;border-radius:999px;background:#fff;color:#455a6d;font:inherit;font-size:12px;font-weight:600;line-height:1;cursor:pointer;transition:background .15s,border-color .15s,color .15s,transform .15s}
+.staff-command-shortcuts button:hover{transform:translateY(-1px);border-color:#b8cbd3;background:#f1f6f7;color:#245866}
+.staff-command-shortcuts button:focus-visible{outline:3px solid #b9d6dc;outline-offset:2px}
+.staff-command>p{grid-column:1;margin:0;color:#526779;font-size:12px;line-height:1.45}
+.staff-command>p:not(:empty){padding:9px 12px;border-radius:9px;background:#f3f7f8}
+@media(max-width:680px){.staff-command{gap:10px;padding:15px}.staff-command form{flex-direction:row}.staff-command form .button{min-height:44px}.staff-command input{height:44px}.staff-command-shortcuts{gap:6px}.staff-command-shortcuts button{min-height:30px;padding:0 10px}}
+@media(max-width:420px){.staff-command-copy small{max-width:250px}.staff-command form .button{min-width:58px;padding:0 12px}}

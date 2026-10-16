@@ -11,7 +11,7 @@
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <title>Mana Nagaram | City operations</title>
   <link rel="stylesheet" href="styles.css?v=light-clean-10">
-  <link rel="stylesheet" href="workflow.css?v=light-clean-6">
+  <link rel="stylesheet" href="workflow.css?v=quick-agent-1">
 </head>
 <body>
   <div class="app-shell">
@@ -50,7 +50,12 @@
           <div class="hero-actions"><button id="exportActions" class="button button-light">Export review log</button><button id="exportTop" class="button button-dark"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 2.8v9.4m0 0 3.4-3.4M10 12.2 6.6 8.8M3.5 12.8v3.7h13v-3.7"/></svg>Export review queue</button></div>
         </section>
 
-        <section class="staff-command card" aria-label="Quick actions"><span class="staff-command-icon" aria-hidden="true">↗</span><div class="staff-command-copy"><strong>Quick task</strong></div><form id="adminCommandForm"><label class="sr-only" for="adminCommand">Find a task</label><input id="adminCommand" maxlength="180" placeholder="Open reports, find a location…"><button class="button button-dark" type="submit">Go ↗</button></form><div class="staff-command-shortcuts" aria-label="Common tasks"><button type="button" data-command="Show unresolved complaints">Open reports</button><button type="button" data-command="Open zone 4">Zone 4</button><button type="button" data-command="Show signals and trends">Trends</button></div><p id="adminCommandResult" aria-live="polite"></p></section>
+        <section class="staff-command card" aria-label="Ask Mana Nagaram">
+          <div class="staff-command-heading"><span class="staff-command-icon" aria-hidden="true">✦</span><div class="staff-command-copy"><strong>What can I help you find?</strong><small>Ask in everyday words and I’ll take you there.</small></div></div>
+          <form id="adminCommandForm"><label class="sr-only" for="adminCommand">Ask for a task</label><input id="adminCommand" maxlength="180" placeholder="Try “show unresolved complaints” or “open Zone 4”…"><button class="button button-dark" type="submit" aria-label="Go to requested task">Go <span aria-hidden="true">↗</span></button></form>
+          <div class="staff-command-shortcuts" aria-label="Try a quick request"><span>Try:</span><button type="button" data-command="Show unresolved complaints">Unresolved complaints</button><button type="button" data-command="Open zone 4">Open Zone 4</button><button type="button" data-command="Show signals and trends">View trends</button></div>
+          <p id="adminCommandResult" aria-live="polite"></p>
+        </section>
 
         <section class="filters card" aria-label="Dashboard filters">
           <div class="filter-title"><span class="filter-icon">⌕</span><span>Explore</span></div>
