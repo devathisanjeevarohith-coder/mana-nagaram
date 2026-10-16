@@ -189,7 +189,7 @@
       render();
     } catch (error) {
       $('forecastNote').textContent = 'The forecast model did not load. Review index and queue remain available.';
-      console.error('CityFix forecast:', error);
+      console.error('Mana Nagaram forecast:', error);
     }
   }
 
@@ -644,7 +644,7 @@
     const blob = new Blob([lines.join('\r\n')], {type: 'text/csv;charset=utf-8'});
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
-    link.download = 'cityfix-review-queue.csv';
+    link.download = 'mana-nagaram-review-queue.csv';
     document.body.append(link); link.click(); link.remove(); URL.revokeObjectURL(link.href);
     showToast(`Exported ${fmt.format(rows.length)} locations.`);
   }
@@ -659,7 +659,7 @@
     })];
     const link = document.createElement('a');
     link.href = URL.createObjectURL(new Blob([lines.join('\r\n')], {type: 'text/csv;charset=utf-8'}));
-    link.download = 'cityfix-review-decisions.csv';
+    link.download = 'mana-nagaram-review-decisions.csv';
     document.body.append(link); link.click(); link.remove(); URL.revokeObjectURL(link.href);
     showToast(`Exported ${fmt.format(entries.length)} saved decisions.`);
   }

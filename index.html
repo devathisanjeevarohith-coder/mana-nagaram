@@ -5,20 +5,20 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#f4f6f5">
   <meta name="description" content="Evidence-first city operations intelligence. Compare incident history, public complaints, and street context to decide where to review first.">
-  <meta property="og:title" content="CityFix AI — Where should we fix first?">
+  <meta property="og:title" content="Mana Nagaram · మన నగరం — Where should we fix first?">
   <meta property="og:description" content="An auditable city operations review queue powered by incident and complaint evidence.">
   <meta property="og:type" content="website">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
-  <title>CityFix AI | Where should we fix first?</title>
+  <title>Mana Nagaram · మన నగరం | City operations</title>
   <link rel="stylesheet" href="styles.css?v=location-details-flow-9">
   <link rel="stylesheet" href="workflow.css?v=complaint-flow-1">
 </head>
 <body>
   <div class="app-shell">
     <aside class="sidebar">
-      <a class="brand" href="#overview" aria-label="CityFix AI home">
+      <a class="brand" href="#overview" aria-label="Mana Nagaram home">
         <span class="brand-mark"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 18.5 9.5 6l4.4 9.2 2.2-4.3 3.9 7.6M4 18.5h16M9.5 6l2.6 5.4"/><path d="M9.5 6h4.1"/></svg></span>
-        <span><strong>CityFix <em>AI</em></strong><small>Operations intelligence</small></span>
+        <span><strong>Mana Nagaram</strong><small>మన నగరం · City operations</small></span>
       </a>
       <div class="nav-label">Workspace</div>
       <nav class="nav-list" aria-label="Main navigation">
@@ -69,19 +69,19 @@
         <section class="overview-grid">
           <article class="card map-card">
             <div class="section-heading map-heading"><div><div class="section-kicker">LOCATION MAP <span class="tiny-separator">·</span> <span id="mapScope">ALL ZONES</span></div><h2>Where the selected issue is</h2><p class="section-subtitle">Choose a location from the worklist to center the map.</p></div><span class="map-caption"><span class="map-caption-dot"></span>Street map</span></div>
-            <div class="map-stage"><iframe id="locationMap" title="Street map centered on the selected CityFix location" loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe><div id="mapLocationLabel" class="map-location-label">DEMO COORDINATE</div></div>
+            <div class="map-stage"><iframe id="locationMap" title="Street map centered on the selected Mana Nagaram location" loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe><div id="mapLocationLabel" class="map-location-label">DEMO COORDINATE</div></div>
             <div class="map-footer"><div class="map-coordinate" id="mapCoordinates">Select a location to view its map position.</div><a id="googleMapsLink" class="google-map-link" href="https://www.google.com/maps" target="_blank" rel="noopener noreferrer">Open in Google Maps <span aria-hidden="true">↗</span></a></div>
             <p class="map-disclaimer" id="mapDisclaimer">Dataset coordinates are simulated examples. Do not use them to dispatch crews.</p>
           </article>
           <article class="card briefing-card">
-            <div class="assistant-top"><div class="assistant-avatar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v2m0 14v2M3 12h2m14 0h2M5.6 5.6 7 7m10 10 1.4 1.4m0-12.8L17 7M7 17l-1.4 1.4"/><circle cx="12" cy="12" r="4.2"/></svg></div><div><div class="section-kicker">CITYFIX ASSISTANT</div><div class="assistant-label">Evidence briefing <span class="live-dot"></span></div></div><span class="assist-badge">DATA-LED</span></div>
+            <div class="assistant-top"><div class="assistant-avatar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v2m0 14v2M3 12h2m14 0h2M5.6 5.6 7 7m10 10 1.4 1.4m0-12.8L17 7M7 17l-1.4 1.4"/><circle cx="12" cy="12" r="4.2"/></svg></div><div><div class="section-kicker">MANA NAGARAM ASSISTANT</div><div class="assistant-label">Evidence briefing <span class="live-dot"></span></div></div><span class="assist-badge">DATA-LED</span></div>
             <div class="briefing-body"><div class="briefing-label">IN THIS VIEW</div><p id="briefingText" role="status" aria-live="polite">Loading evidence summary…</p><p id="forecastNote" class="forecast-note" role="status">Loading Random Forest forecast…</p></div>
             <details class="assistant-explore">
               <summary>Explore zone rankings and ask a question</summary>
               <div class="assistant-explore-body">
                 <div class="zone-leaders-head"><span>Highest average index</span><span>BY ZONE</span></div>
                 <div class="zone-leaders" id="zoneLeaders"></div>
-                <form class="ask-form" id="assistantForm"><label class="sr-only" for="assistantInput">Ask CityFix about the records</label><input id="assistantInput" type="text" placeholder="Ask about severity, complaints, or a zone…" autocomplete="off"><button type="submit" aria-label="Ask CityFix">Ask <span>↗</span></button></form>
+                <form class="ask-form" id="assistantForm"><label class="sr-only" for="assistantInput">Ask Mana Nagaram about the records</label><input id="assistantInput" type="text" placeholder="Ask about severity, complaints, or a zone…" autocomplete="off"><button type="submit" aria-label="Ask Mana Nagaram">Ask <span>↗</span></button></form>
                 <div class="ask-suggestions"><button type="button" data-question="Which location has the most open work?">Open work</button><button type="button" data-question="Where are potholes reported most?">Potholes</button><button type="button" data-question="Which zone ranks highest?">Top zone</button></div>
                 <div class="assistant-foot"><span class="shield-icon">◈</span><span>Answers are computed from the supplied records; no outside claims.</span></div>
               </div>
@@ -184,7 +184,7 @@
           <div class="citizen-admin-list" id="citizenReportList"></div>
           <datalist id="assigneeOptions"><option value="Asha Rao"><option value="Vikram Singh"><option value="Meera Iyer"><option value="Arjun Kumar"><option value="Sneha Das"><option value="Ravi Kumar"><option value="Pooja Nair"><option value="Operations desk"></datalist>
         </section>
-        <footer class="page-footer"><span>CityFix AI · Evidence first, action with context</span><span>DATATHON demo · Data period 2025</span></footer>
+        <footer class="page-footer"><span>Mana Nagaram · మన నగరం · Evidence first, action with context</span><span>DATATHON demo · Data period 2025</span></footer>
       </div>
     </main>
   </div>
@@ -192,7 +192,7 @@
   <dialog id="methodDialog" class="method-dialog">
     <form method="dialog"><button class="dialog-close" aria-label="Close">×</button></form>
     <div class="section-kicker">SCORING DETAILS</div><h2>A review index, with the math in view.</h2>
-    <p class="dialog-intro">CityFix combines normalized evidence into a 0–100 index. Each count is scaled against the 95th percentile across all locations, then capped at 100. That keeps unusually large values from dominating the queue.</p>
+    <p class="dialog-intro">Mana Nagaram combines normalized evidence into a 0–100 index. Each count is scaled against the 95th percentile across all locations, then capped at 100. That keeps unusually large values from dominating the queue.</p>
     <div class="dialog-weights"><div><b>30%</b><span>Incident volume<br><small>Historical reports per location</small></span></div><div><b>25%</b><span>Average severity<br><small>Low 1 · Medium 2 · High 3 · Critical 4</small></span></div><div><b>20%</b><span>Complaint volume<br><small>Public complaints per location</small></span></div><div><b>15%</b><span>Open backlog<br><small>Unresolved incidents + open complaints</small></span></div><div><b>10%</b><span>Street context<br><small>Road condition, pedestrian activity, proximity, density</small></span></div></div>
     <p class="dialog-note"><strong>ML forecast:</strong> a 36-tree Random Forest regressor estimates Q4 incident counts from Q1–Q3 incidents and complaints plus street context. Results include a location holdout test and mean-baseline comparison. The review index remains a separate, transparent heuristic. Both use synthetic data and require local validation before operational use.</p>
     <div class="dialog-source">Source: supplied DATATHON Track 3 synthetic dataset · 2025</div>

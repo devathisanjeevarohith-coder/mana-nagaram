@@ -1,6 +1,6 @@
-# CityFix AI
+# Mana Nagaram · మన నగరం
 
-City operations intelligence for reviewing where limited inspection capacity may be needed first. CityFix combines incident history, public complaints, and street context in an auditable review queue.
+Mana Nagaram (మన నగరం, “our city”) helps city teams review where limited inspection capacity may be needed first. It combines incident history, public complaints, and street context in an auditable review queue.
 
 ## Deploy
 
