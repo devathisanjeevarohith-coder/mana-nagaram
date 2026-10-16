@@ -641,3 +641,23 @@ body { font-size: 16px; line-height: 1.55; color: #18323a; }
   .nav-list { width: 100%; flex: 1 0 100%; justify-content: space-between; gap: 4px; overflow-x: auto; }
   .nav-item, .nav-item:not(.active):not(:hover), .nav-item:nth-child(n+3) { flex: 1 0 auto; justify-content: center; min-width: max-content; }
 }
+
+/* Keep the selected location brief in the page flow beneath the priority list. */
+.queue-layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0; }
+.detail-card, .detail-card.is-open { position: static; inset: auto; display: block; width: 100%; min-height: 0; max-height: none; overflow: visible; margin-top: 18px; padding: 20px; border-radius: 15px; box-shadow: 0 8px 24px rgba(20, 43, 55, .06); }
+.detail-card { scroll-margin-top: 18px; }
+.detail-close, .detail-scrim { display: none !important; }
+.detail-card > .detail-disclosure[open] > summary { cursor: default; }
+.detail-card > .detail-disclosure[data-open-on-select] > summary::after { display: none; }
+.detail-card > .detail-disclosure[data-open-on-select][open] > summary { margin-bottom: 14px; }
+.detail-card > .detail-disclosure[data-open-on-select] { overflow: visible; }
+.detail-card > .detail-disclosure[data-open-on-select] > :not(summary) { padding-bottom: 14px; }
+.record-history { margin-top: 14px; }
+.detail-caution { margin-top: 4px; }
+@media (max-width: 680px) {
+  .queue-layout { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  .detail-card, .detail-card.is-open { position: static !important; inset: auto; display: block !important; width: 100%; max-height: none; overflow: visible; margin-top: 15px; padding: 15px; border-radius: 14px; box-shadow: 0 6px 20px rgba(20, 43, 55, .06); }
+  .detail-card > .detail-disclosure[data-open-on-select] { margin-bottom: 13px; }
+  .detail-card > .detail-disclosure[data-open-on-select] > summary { min-height: 48px; padding: 5px 0 10px; }
+  .detail-card > .detail-disclosure[data-open-on-select][open] > summary { margin-bottom: 12px; }
+}
