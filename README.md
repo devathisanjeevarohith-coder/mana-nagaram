@@ -1,6 +1,6 @@
-# Mana Nagaram · మన నగరం
+# Mana Nagaram
 
-Mana Nagaram (మన నగరం, “our city”) helps city teams review where limited inspection capacity may be needed first. It combines incident history, public complaints, and street context in an auditable review queue.
+Mana Nagaram helps city teams review where limited inspection capacity may be needed first. It combines incident history, public complaints, and street context in an auditable review queue.
 
 ## Deploy
 
