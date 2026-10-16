@@ -40,9 +40,9 @@
       <div class="page-wrap">
         <section class="hero" id="overview">
           <div>
-            <div class="eyebrow"><span class="eyebrow-line"></span>DATATHON · TRACK 03</div>
-            <h1>Where should we<br class="mobile-break"> fix first?</h1>
-            <p class="hero-copy">Bring incident history, public complaints, and street context into one clear review queue.</p>
+            <div class="eyebrow"><span class="eyebrow-line"></span>CITY OPERATIONS · REVIEW WORKSPACE</div>
+            <h1>Find the next place to review.</h1>
+            <p class="hero-copy">Compare reports, complaints, and street context before deciding where to inspect.</p>
           </div>
           <div class="hero-actions"><button id="exportActions" class="button button-light">Export review log</button><button id="exportTop" class="button button-dark"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 2.8v9.4m0 0 3.4-3.4M10 12.2 6.6 8.8M3.5 12.8v3.7h13v-3.7"/></svg>Export review queue</button></div>
         </section>
@@ -60,7 +60,6 @@
           <article class="metric-card"><div class="metric-top"><span>Incidents recorded</span><span class="metric-symbol blue">↗</span></div><div class="metric-number" id="metricIncidents">—</div><div class="metric-foot"><span id="metricIncidentShare" class="foot-accent blue-text">—</span><span>across selected locations</span></div></article>
           <article class="metric-card"><div class="metric-top"><span>Public complaints</span><span class="metric-symbol amber">☷</span></div><div class="metric-number" id="metricComplaints">—</div><div class="metric-foot"><span id="metricComplaintShare" class="foot-accent amber-text">—</span><span>across selected locations</span></div></article>
           <article class="metric-card"><div class="metric-top"><span>Open work items</span><span class="metric-symbol coral">◷</span></div><div class="metric-number" id="metricOpen">—</div><div class="metric-foot"><span class="foot-dot coral-dot"></span><span>unresolved incidents + complaints</span></div></article>
-          <article class="metric-card"><div class="metric-top"><span>Review decisions saved</span><span class="metric-symbol mint">✓</span></div><div class="metric-number" id="metricReviews">—</div><div class="metric-foot"><span class="foot-dot green"></span><span id="metricReviewScope">in this view</span></div></article>
         </section>
 
         <section class="overview-grid">
@@ -71,13 +70,17 @@
           </article>
           <article class="card briefing-card">
             <div class="assistant-top"><div class="assistant-avatar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v2m0 14v2M3 12h2m14 0h2M5.6 5.6 7 7m10 10 1.4 1.4m0-12.8L17 7M7 17l-1.4 1.4"/><circle cx="12" cy="12" r="4.2"/></svg></div><div><div class="section-kicker">CITYFIX ASSISTANT</div><div class="assistant-label">Evidence briefing <span class="live-dot"></span></div></div><span class="assist-badge">DATA-LED</span></div>
-            <div class="briefing-body"><div class="briefing-label">WHAT THE RECORDS SHOW</div><p id="briefingText">Loading evidence summary…</p></div>
-            <div class="briefing-rule"></div>
-            <div class="zone-leaders-head"><span>Zones to review</span><span>INCIDENTS + COMPLAINTS</span></div>
-            <div class="zone-leaders" id="zoneLeaders"></div>
-            <form class="ask-form" id="assistantForm"><label class="sr-only" for="assistantInput">Ask CityFix about the records</label><input id="assistantInput" type="text" placeholder="Ask about severity, complaints, or a zone…" autocomplete="off"><button type="submit" aria-label="Ask CityFix">Ask <span>↗</span></button></form>
-            <div class="ask-suggestions"><button type="button" data-question="Which location has the most open work?">Open work</button><button type="button" data-question="Where are potholes reported most?">Potholes</button><button type="button" data-question="Which zone ranks highest?">Top zone</button></div>
-            <div class="assistant-foot"><span class="shield-icon">◈</span><span>Answers are computed from the supplied records; no outside claims.</span></div>
+            <div class="briefing-body"><div class="briefing-label">IN THIS VIEW</div><p id="briefingText" role="status" aria-live="polite">Loading evidence summary…</p></div>
+            <details class="assistant-explore">
+              <summary>Explore zone rankings and ask a question</summary>
+              <div class="assistant-explore-body">
+                <div class="zone-leaders-head"><span>Highest average index</span><span>BY ZONE</span></div>
+                <div class="zone-leaders" id="zoneLeaders"></div>
+                <form class="ask-form" id="assistantForm"><label class="sr-only" for="assistantInput">Ask CityFix about the records</label><input id="assistantInput" type="text" placeholder="Ask about severity, complaints, or a zone…" autocomplete="off"><button type="submit" aria-label="Ask CityFix">Ask <span>↗</span></button></form>
+                <div class="ask-suggestions"><button type="button" data-question="Which location has the most open work?">Open work</button><button type="button" data-question="Where are potholes reported most?">Potholes</button><button type="button" data-question="Which zone ranks highest?">Top zone</button></div>
+                <div class="assistant-foot"><span class="shield-icon">◈</span><span>Answers are computed from the supplied records; no outside claims.</span></div>
+              </div>
+            </details>
           </article>
         </section>
 
@@ -95,7 +98,7 @@
         </section>
 
         <section class="queue-section" id="queue">
-          <div class="queue-heading"><div><div class="section-kicker">NEXT BEST REVIEW</div><h2>Priority queue</h2><p class="section-subtitle">Start with the strongest combined evidence. Select a location to inspect its records.</p></div><div class="queue-tools"><label class="sort-control"><span>Rank by</span><select id="sortBy" aria-label="Rank locations by"><option value="priority">Review index</option><option value="open">Open workload</option><option value="complaints">Complaints</option><option value="incidents">Incident count</option></select></label><div class="queue-total"><strong id="queueCount">—</strong><span>locations</span></div></div></div>
+          <div class="queue-heading"><div><div class="section-kicker">REVIEW WORKLIST</div><h2>Priority queue</h2><p class="section-subtitle">Select a location to check the evidence and record a human decision.</p></div><div class="queue-tools"><label class="sort-control"><span>Rank by</span><select id="sortBy" aria-label="Rank locations by"><option value="priority">Review index</option><option value="open">Open workload</option><option value="complaints">Complaints</option><option value="incidents">Incident count</option></select></label><div class="queue-total"><strong id="queueCount">—</strong><span>locations</span></div><span class="queue-reviewed" id="queueReviewCount">— reviewed</span></div></div>
           <div class="queue-layout">
             <article class="card table-card">
               <div class="table-topline"><span>LOCATION</span><span>INCIDENTS</span><span>COMPLAINTS</span><span>OPEN ITEMS</span><span>PRIORITY INDEX</span></div>
@@ -103,7 +106,7 @@
               <div class="table-footer"><span id="tableShowing">Showing —</span><button id="showMore" class="text-link">Show more <span>↓</span></button></div>
             </article>
             <aside class="card detail-card" id="detailCard" aria-live="polite">
-              <div class="detail-top"><div><div class="section-kicker">LOCATION BRIEF</div><h3 id="detailId">Select a location</h3></div><span class="priority-chip" id="detailPriority">—</span></div>
+              <div class="detail-top"><div><div class="section-kicker">LOCATION BRIEF</div><h3 id="detailId">Select a location</h3></div><span class="priority-chip" id="detailPriority">—</span><button class="detail-close" id="detailClose" type="button" aria-label="Close location details">×</button></div>
               <div id="detailMeta" class="detail-meta">Choose a row in the review queue to see its evidence.</div>
               <div class="detail-divider"></div>
               <div class="detail-stats"><div><span>Incidents</span><strong id="detailIncidents">—</strong></div><div><span>Complaints</span><strong id="detailComplaints">—</strong></div><div><span>High / critical</span><strong id="detailSeverity">—</strong></div><div><span>Open work</span><strong id="detailOpen">—</strong></div></div>
@@ -131,6 +134,8 @@
     </main>
   </div>
 
+  <button id="detailScrim" class="detail-scrim" type="button" aria-label="Close location details"></button>
+
   <dialog id="methodDialog" class="method-dialog">
     <form method="dialog"><button class="dialog-close" aria-label="Close">×</button></form>
     <div class="section-kicker">SCORING DETAILS</div><h2>A review index, with the math in view.</h2>
@@ -146,3 +151,4 @@
   <script src="app.js"></script>
 </body>
 </html>
+
