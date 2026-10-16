@@ -323,4 +323,14 @@ button { cursor: pointer; }
 @media (prefers-reduced-motion: reduce) {
   .detail-scrim { transition: none; }
 }
+@media (max-width: 680px) {
+  .page-wrap { display: flex; flex-direction: column; }
+  .hero { order: 1; }
+  .filters { order: 2; }
+  .metric-grid { order: 3; }
+  .queue-section { order: 4; }
+  .overview-grid { order: 5; }
+  .lower-grid { order: 6; }
+  .page-footer { order: 7; }
+}
 
