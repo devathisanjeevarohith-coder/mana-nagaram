@@ -214,6 +214,10 @@
     $('#citizenReportSearch').addEventListener('input', (event) => { search = event.target.value.trim().toLowerCase(); render(); });
     $('#citizenReportList').addEventListener('submit', saveReport);
     $('#adminCommandForm').addEventListener('submit', handleCommand);
+    document.querySelectorAll('.staff-command-shortcuts [data-command]').forEach((button) => button.addEventListener('click', () => {
+      $('#adminCommand').value = button.dataset.command;
+      $('#adminCommandForm').requestSubmit();
+    }));
     window.addEventListener('storage', (event) => {
       if (event.key === KEY) {
         const previous = reports; reports = readReports();
