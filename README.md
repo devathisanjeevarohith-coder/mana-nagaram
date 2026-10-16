@@ -6,9 +6,9 @@ Mana Nagaram helps city teams review where limited inspection capacity may be ne
 
 This repository is configured to publish automatically to GitHub Pages after a push to `main`.
 
-1. Create a new **public** GitHub repository named `cityfix-ai` and push the contents of this folder to its `main` branch.
+1. Push the contents of this folder to the public `mana-nagaram` repository's `main` branch.
 2. In the repository, open **Settings → Pages** and set **Build and deployment → Source** to **GitHub Actions**.
-3. The included workflow publishes the site. The public URL will be `https://<github-owner>.github.io/cityfix-ai/`.
+3. The included workflow publishes the site at `https://<github-owner>.github.io/mana-nagaram/`.
 
 No secrets, API keys, package installation, or external AI service are needed. The public site reads its bundled, precomputed data and works as a static deployment.
 
