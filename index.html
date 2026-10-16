@@ -10,7 +10,7 @@
   <meta property="og:type" content="website">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <title>CityFix AI | Where should we fix first?</title>
-  <link rel="stylesheet" href="styles.css?v=readable-sections-7">
+  <link rel="stylesheet" href="styles.css?v=location-details-flow-8">
 </head>
 <body>
   <div class="app-shell">
@@ -107,7 +107,7 @@
               <div class="table-footer"><span id="tableShowing">Showing —</span><button id="showMore" class="text-link">Show more <span>↓</span></button></div>
             </article>
             <aside class="card detail-card" id="detailCard" aria-live="polite">
-              <div class="detail-top"><div><div class="section-kicker">LOCATION BRIEF</div><h3 id="detailId">Select a location</h3></div><span class="priority-chip" id="detailPriority">—</span><button class="detail-close" id="detailClose" type="button" aria-label="Close location details">×</button></div>
+              <div class="detail-top"><div><div class="section-kicker">LOCATION BRIEF</div><h3 id="detailId">Select a location</h3></div><span class="priority-chip" id="detailPriority">—</span></div>
               <div id="detailMeta" class="detail-meta">Choose a row in the review queue to see its evidence.</div>
               <div class="detail-divider"></div>
               <div class="detail-stats"><div><span>Incidents</span><strong id="detailIncidents">—</strong></div><div><span>Complaints</span><strong id="detailComplaints">—</strong></div><div><span>High / critical</span><strong id="detailSeverity">—</strong></div><div><span>Open work</span><strong id="detailOpen">—</strong></div></div>
@@ -123,11 +123,11 @@
                 </details>
               </section>
               <div class="detail-divider"></div>
-              <details class="detail-disclosure">
+              <details class="detail-disclosure" open data-open-on-select>
                 <summary>Why this location ranks here</summary>
                 <div class="detail-disclosure-body"><div id="detailReasons" class="reason-list"></div><div class="issue-line"><span id="detailIssueIcon" class="issue-icon">↗</span><div><strong id="detailIssue">—</strong><small id="detailIssueSub">incident type</small></div><span id="detailIssueCount" class="issue-count">—</span></div></div>
               </details>
-              <details class="detail-disclosure decision-disclosure">
+              <details class="detail-disclosure decision-disclosure" open data-open-on-select>
                 <summary><span>Record a human review</span><span id="decisionSavedState" class="decision-state">No decision</span></summary>
                 <section class="decision-panel" aria-labelledby="decisionHeading">
                 <div class="decision-heading"><div><div class="detail-subhead">HUMAN REVIEW</div><strong id="decisionHeading">Record a next step</strong></div></div>
@@ -139,10 +139,10 @@
                 <p class="decision-foot">Saved in this browser only. Avoid personal or confidential information.</p>
                 </section>
               </details>
-              <details class="detail-disclosure field-reports" aria-labelledby="fieldReportsHeading">
+              <details class="detail-disclosure field-reports" aria-labelledby="fieldReportsHeading" open data-open-on-select>
                 <summary><span id="fieldReportsHeading">Field photos and reports</span><span id="fieldReportCount" class="decision-state">0 reports</span></summary>
                 <div id="fieldReportList" class="field-report-list"></div>
-                <details class="field-report-details" id="fieldReportDetails">
+                <details class="field-report-details" id="fieldReportDetails" open data-open-on-select>
                   <summary>Add field report and photos</summary>
                   <form id="fieldReportForm" class="field-report-form">
                     <label class="decision-label" for="reportType">Problem type</label>
@@ -178,8 +178,6 @@
     </main>
   </div>
 
-  <button id="detailScrim" class="detail-scrim" type="button" aria-label="Close location details"></button>
-
   <dialog id="methodDialog" class="method-dialog">
     <form method="dialog"><button class="dialog-close" aria-label="Close">×</button></form>
     <div class="section-kicker">SCORING DETAILS</div><h2>A review index, with the math in view.</h2>
@@ -193,6 +191,6 @@
 
   <script src="google-maps-config.js?v=1"></script>
   <script src="data.js?v=review-workspace-4"></script>
-  <script src="app.js?v=review-workspace-4"></script>
+  <script src="app.js?v=location-details-flow-8"></script>
 </body>
 </html>
