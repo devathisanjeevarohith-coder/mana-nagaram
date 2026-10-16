@@ -228,6 +228,16 @@
   function answerQuestion(question) {
     const rows = currentRows();
     const query = question.trim().toLowerCase();
+    const issueAliases = [
+      ['Pothole', /\bpotholes?\b|road damage|road surface/],
+      ['Blocked drain', /\bdrains?|sewers?|drainage\b/],
+      ['Flooding', /\bflood(?:ing)?|waterlogging\b/],
+      ['Streetlight outage', /\bstreet\s*lights?|streetlights?|lamps?|lighting\b/],
+      ['Signal failure', /\bsignals?|traffic lights?\b/],
+      ['Collision', /\bcollisions?|crashes?|accidents?\b/]
+    ];
+    const requestedType = issueAliases.find(([, pattern]) => pattern.test(query))?.[0]
+      || data.incidentTypes.find(type => query.includes(type.toLowerCase()));
     if (!rows.length) {
       $('briefingText').textContent = 'No locations are in the current filter scope. Reset or adjust the filters, then ask again.';
       return;
@@ -237,6 +247,11 @@
       if (/complaint|citizen report/.test(query)) {
         const total = rows.reduce((sum, loc) => sum + (/\b(open|active|unresolved|pending)\b/.test(query) ? loc.openComplaints : /\b(resolved|closed|completed)\b/.test(query) ? loc.complaintCount - loc.openComplaints : loc.complaintCount), 0);
         $('briefingText').textContent = `There are ${fmt.format(total)} ${/\b(open|active|unresolved|pending)\b/.test(query) ? 'open ' : /\b(resolved|closed|completed)\b/.test(query) ? 'resolved ' : ''}complaints across ${fmt.format(rows.length)} locations in this view.`;
+        return;
+      }
+      if (requestedType) {
+        const total = rows.reduce((sum, loc) => sum + (loc.incidentTypes[requestedType] || 0), 0);
+        $('briefingText').textContent = `There are ${fmt.format(total)} ${requestedType.toLowerCase()} incidents across ${fmt.format(rows.length)} locations in this view.${/\b(open|active|unresolved|pending)\b/.test(query) ? ' The supplied data does not track open status by issue type.' : ''}`;
         return;
       }
       if (/\b(critical|severe|injur|high priority)\b/.test(query)) {
@@ -262,7 +277,6 @@
         : `${locationId} is outside the current filter scope. Clear the zone, issue, or search filter to inspect it.`;
       return;
     }
-    const requestedType = data.incidentTypes.find(type => query.includes(type.toLowerCase()) || query.includes(`${type.toLowerCase()}s`));
     if (requestedType) {
       const match = [...rows].sort((a, b) => (b.incidentTypes[requestedType] || 0) - (a.incidentTypes[requestedType] || 0))[0];
       $('briefingText').textContent = match && match.incidentTypes[requestedType]
@@ -284,6 +298,14 @@
     if (/critical|sever|injur/.test(query)) {
       const match = [...rows].sort((a, b) => b.highCritical - a.highCritical || b.injuries - a.injuries)[0];
       $('briefingText').textContent = `${match.id} (${match.zone.replace('_', ' ')}) has ${fmt.format(match.highCritical)} high or critical incidents and ${fmt.format(match.injuries)} recorded injuries in the supplied data. Its review index is ${match.priority}/100.`;
+      return;
+    }
+    if (/security|safety|safe|danger|hazard/.test(query)) {
+      const highCritical = rows.reduce((sum, loc) => sum + loc.highCritical, 0);
+      const injuries = rows.reduce((sum, loc) => sum + loc.injuries, 0);
+      const contextCount = rows.filter(loc => loc.pedestrian === 'High' || loc.school || loc.hospital).length;
+      const match = [...rows].sort((a, b) => b.priority - a.priority || a.id.localeCompare(b.id))[0];
+      $('briefingText').textContent = `Safety snapshot for ${fmt.format(rows.length)} locations: ${fmt.format(highCritical)} high or critical incidents and ${fmt.format(injuries)} recorded injuries. ${fmt.format(contextCount)} locations have high pedestrian activity or are near a school or hospital. ${match.id} (${match.zone.replace('_', ' ')}) is highest-ranked at ${match.priority}/100. This demo has no crime or personal-security records; these are roadway-safety indicators only.`;
       return;
     }
     if (/school|hospital|pedestrian/.test(query)) {
@@ -308,7 +330,7 @@
       return;
     }
     const match = [...rows].sort((a, b) => b.priority - a.priority || a.id.localeCompare(b.id))[0];
-    $('briefingText').textContent = `${match.id} (${match.zone.replace('_', ' ')}) is the highest-ranked location in this view at ${match.priority}/100. It has ${fmt.format(match.incidentCount)} incidents, ${fmt.format(match.complaintCount)} complaints, and ${fmt.format(match.openWork)} open work items. Ask about a location, zone, issue type, severity, complaints, or backlog.`;
+    $('briefingText').textContent = `I couldn’t match “${question.trim()}” to a field in this dataset. Try a question about safety, an issue type (like drains or lighting), complaints, open work, a zone, or a location code such as L0042.`;
   }
 
   function renderTrend(rows) {
