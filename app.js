@@ -65,7 +65,7 @@
     } catch (_) { return {}; }
   })();
   const queueLabels = ['Incident volume', 'Average severity', 'Complaint volume', 'Open backlog', 'Street context'];
-  const state = {zone: 'all', issue: 'all', search: '', selected: null, expanded: false, sort: 'priority', mobileDetailOpen: false};
+  const state = {zone: 'all', issue: 'all', search: '', selected: null, expanded: false, sort: 'priority'};
   const zones = [...new Set(locations.map(x => x.zone))].sort((a, b) => a.localeCompare(b));
   zones.forEach((zone) => zoneFilter.add(new Option(zone.replace('_', ' '), zone)));
   data.incidentTypes.forEach((type) => issueFilter.add(new Option(type, type)));
@@ -615,15 +615,16 @@
     renderTrend(rows);
     renderQueue(rows);
     renderDetails(selected);
-    $('detailCard').classList.toggle('is-open', state.mobileDetailOpen);
-    $('detailScrim').classList.toggle('is-open', state.mobileDetailOpen);
   }
 
   function selectLocation(id) {
     state.selected = id;
-    state.mobileDetailOpen = true;
     render();
-    if (window.matchMedia('(max-width: 680px)').matches) $('detailClose').focus({preventScroll: true});
+    document.querySelectorAll('#detailCard [data-open-on-select]').forEach(section => { section.open = true; });
+    requestAnimationFrame(() => $('detailCard').scrollIntoView({
+      behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+      block: 'start',
+    }));
   }
 
   function exportQueue() {
@@ -715,9 +716,6 @@
     }, {enableHighAccuracy: true, timeout: 12000, maximumAge: 0});
   });
   $('fieldReportForm').addEventListener('submit', saveFieldReport);
-  const closeLocationDetails = () => { state.mobileDetailOpen = false; render(); };
-  $('detailClose').addEventListener('click', closeLocationDetails);
-  $('detailScrim').addEventListener('click', closeLocationDetails);
   $('assistantForm').addEventListener('submit', (event) => {
     event.preventDefault();
     answerQuestion($('assistantInput').value);
@@ -735,4 +733,3 @@
   render();
   loadForecastModel();
 })();
-
